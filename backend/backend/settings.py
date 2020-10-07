@@ -46,14 +46,24 @@ INSTALLED_APPS = [
 SHELL_PLUS = "ipython"
 
 CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'https://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://127.0.0.1:3000',
+    'http://localhost:8080',
     'https://localhost:8080',
+    'http://127.0.0.1:8080',
+    'https://127.0.0.1:8080',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 GRAPHENE = {
     'SCHEMA': 'gql.schema.schema'
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
