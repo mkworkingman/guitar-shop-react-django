@@ -89,7 +89,6 @@ const Discount: React.FC = () => {
         taken[x] = --len in taken ? taken[len] : len;
       }
 
-      console.log(result);
       setDiscountItems(result);
     }
   }, [loading, data]);
