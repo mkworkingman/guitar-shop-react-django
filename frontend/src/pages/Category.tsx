@@ -124,20 +124,25 @@ interface ParamTypes {
 //   price: number[]
 // }
 
+// interface IIndexable<T = any> {
+//   [key: string]: T,
+// }
+
 interface IValues {
   strings: {
-    [key: number]: any
+    [key: number]: boolean
   },
   frets: {
-    [key: number]: any
+    [key: number]: boolean
   },
   brand: {
-    [key: string]: any
+    [key: string]: boolean
   },
   orientation: {
-    [key: string]: any
+    [key: string]: boolean
   },
-  price: number[]
+  price: number[],
+  [key: string]: any
 }
 
 const Category: React.FC = () => {
@@ -291,10 +296,12 @@ const Category: React.FC = () => {
   const checkboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const [property, propertyName] = e.target.name.split('_');
 
+    console.log(category[property]);
+
     setValue({
-      ...value,
+      ...category,
       [property]: {
-        ...value[property],
+        ...category[property],
         [propertyName]: e.target.checked
       }
     });
@@ -302,7 +309,7 @@ const Category: React.FC = () => {
 
   const handleChange = (e: any, newValue: number | number[]) => {
     setValue({
-      ...value,
+      ...category,
       price: newValue as number[]
     });
   };
