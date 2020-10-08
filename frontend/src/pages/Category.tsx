@@ -50,83 +50,9 @@ const useStyles = makeStyles({
   }
 });
 
-const itemsInitial = [
-    {
-      img: process.env.PUBLIC_URL + '/img1.jpg',
-      title: 'FENDER FA-125 DREADNOUGHT WALNUT',
-      strings: 6,
-      frets: 20,
-      brand: 'Fender',
-      orientation: 'right',
-      price: 185.00,
-      discount: 165.00
-    },
-    {
-      img: process.env.PUBLIC_URL + '/img1.jpg',
-      title: 'MARTINEZ W - 164 P / N',
-      strings: 6,
-      frets: 22,
-      brand: 'Martinez',
-      orientation: 'right',
-      price: 150.00
-    },
-    {
-      img: process.env.PUBLIC_URL + '/img1.jpg',
-      title: 'Sigma DM12-1ST+',
-      strings: 12,
-      frets: 20,
-      brand: 'Sigma',
-      orientation: 'right',
-      price: 150.00
-    },
-    {
-      img: process.env.PUBLIC_URL + '/img1.jpg',
-      title: 'FENDER Tim Armstrong Hellcat-LH',
-      strings: 6,
-      frets: 19,
-      brand: 'Fender',
-      orientation: 'left',
-      price: 550.00
-    }
-  ]
-
 interface ParamTypes {
   name: string;
 }
-
-// interface IIndexable<T = any> {
-//   [key: string]: T,
-// }
-
-// interface IValues {
-//   strings: {
-//     6: boolean
-//     12: boolean,
-//     [key: string]: boolean
-//   },
-//   frets: {
-//     19: boolean
-//     20: boolean
-//     22: boolean,
-//     [key: string]: boolean
-//   },
-//   brand: {
-//     Fender: boolean
-//     Martinez: boolean
-//     Sigma: boolean,
-//     [key: string]: boolean
-//   },
-//   orientation: {
-//     left: boolean
-//     right: boolean,
-//     [key: string]: boolean
-//   },
-//   price: number[]
-// }
-
-// interface IIndexable<T = any> {
-//   [key: string]: T,
-// }
 
 interface IValues {
   strings: {
@@ -165,9 +91,10 @@ const Category: React.FC = () => {
       }
     }
   `;
-  const { loading, error, data } = useQuery(DISC);
+  const { loading, data } = useQuery(DISC);
   
-  const [itemsgql, setItemsgql] = useState<any[]>([]);
+  const [instruments, setInstruments] = useState<any[]>([]);
+  const [filteredInstruments, setFilteredInstruments] = useState<any[]>([]);
   const [category, setCategory] = useState<IValues>({
     strings: {},
     frets: {},
@@ -228,77 +155,16 @@ const Category: React.FC = () => {
         value.orientation[key] = false;
       }
 
-      console.log(value);
-
-      setItemsgql(instrumentListType);
+      setInstruments(instrumentListType);
+      setFilteredInstruments(instrumentListType);
       setCategory(value);
     }
   }, [loading, data]);
-  
-  const [items, setItems] = useState([
-    {
-      title: 'FENDER FA-125 DREADNOUGHT WALNUT',
-      strings: 6,
-      frets: 20,
-      brand: 'Fender',
-      orientation: 'right',
-      price: 185.00,
-      discount: 165.00
-    },
-    {
-      title: 'MARTINEZ W - 164 P / N',
-      strings: 6,
-      frets: 22,
-      brand: 'Martinez',
-      orientation: 'right',
-      price: 150.00
-    },
-    {
-      title: 'Sigma DM12-1ST+',
-      strings: 12,
-      frets: 20,
-      brand: 'Sigma',
-      orientation: 'right',
-      price: 150.00
-    },
-    {
-      title: 'FENDER Tim Armstrong Hellcat-LH',
-      strings: 6,
-      frets: 19,
-      brand: 'Fender',
-      orientation: 'left',
-      price: 550.00
-    }
-  ]);
-
-  const [value, setValue] = useState<any>({
-    strings: {
-      6: false,
-      12: false
-    },
-    frets: {
-      19: false,
-      20: false,
-      22: false
-    },
-    brand: {
-      Fender: false,
-      Martinez: false,
-      Sigma: false
-    },
-    orientation: {
-      left: false,
-      right: false
-    },
-    price: [0, 550]
-  });
 
   const checkboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const [property, propertyName] = e.target.name.split('_');
 
-    console.log(category[property]);
-
-    setValue({
+    setCategory({
       ...category,
       [property]: {
         ...category[property],
@@ -308,7 +174,7 @@ const Category: React.FC = () => {
   };
 
   const handleChange = (e: any, newValue: number | number[]) => {
-    setValue({
+    setCategory({
       ...category,
       price: newValue as number[]
     });
@@ -320,37 +186,40 @@ const Category: React.FC = () => {
     const brands: string[] = [];
     const orientation: string[] = [];
 
-    for (const prop in value.strings) {
-      if (value.strings[prop]) strings.push(Number(prop));
+    for (const prop in category.strings) {
+      if (category.strings[prop]) strings.push(Number(prop));
     }
 
-    for (const prop in value.frets) {
-      if (value.frets[prop]) frets.push(Number(prop));
+    for (const prop in category.frets) {
+      if (category.frets[prop]) frets.push(Number(prop));
     }
 
-    for (const prop in value.brand) {
-      if (value.brand[prop]) brands.push(prop);
+    for (const prop in category.brand) {
+      if (category.brand[prop]) brands.push(prop);
     }
 
-    for (const prop in value.orientation) {
-      if (value.orientation[prop]) orientation.push(prop);
+    for (const prop in category.orientation) {
+      if (category.orientation[prop]) orientation.push(prop);
     }
 
-    setItems(itemsInitial.filter(item => {
-      if (strings.length > 0 && strings.indexOf(item.strings) === -1) return false;
-      if (frets.length > 0 && frets.indexOf(item.frets) === -1) return false;
-      if (brands.length > 0 && brands.indexOf(item.brand) === -1) return false;
-      if (orientation.length > 0 && orientation.indexOf(item.orientation) === -1) return false;
+    setFilteredInstruments(
+      instruments.filter(item => {
+        if (strings.length > 0 && strings.indexOf(item.strings) === -1) return false;
+        if (frets.length > 0 && frets.indexOf(item.frets) === -1) return false;
+        if (brands.length > 0 && brands.indexOf(item.brand) === -1) return false;
+        if (orientation.length > 0 && orientation.indexOf(item.orientation) === -1) return false;
 
-      if (item.discount) {
-        if (item.discount < value.price[0] || item.discount > value.price[1]) return false;
-      } else {
-        if (item.price < value.price[0] || item.price > value.price[1]) return false;
-      }
-      
-      return item;
-    }));
-  }, [value]);
+        if (item.discount) {
+          if (item.discount < category.price[0] || item.discount > category.price[1]) return false;
+        } else {
+          if (item.price < category.price[0] || item.price > category.price[1]) return false;
+        }
+        
+        return item;
+      })
+    );
+
+  }, [category]);
 
   if (name === 'acoustic' ||
       name === 'electric' ||
@@ -369,22 +238,19 @@ const Category: React.FC = () => {
               <Typography>Strings</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="6"
-                labelPlacement="end"
-                name="strings_6"
-                checked={value.strings[6]}
-              />
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="12"
-                labelPlacement="end"
-                name="strings_12"
-                checked={value.strings[12]}
-              />
+              {
+                Object.entries(category.strings).map(([key, value]) => 
+                  <FormControlLabel
+                    key={key}
+                    value="end"
+                    control={<Checkbox color="primary" onChange={checkboxChange} />}
+                    label={key}
+                    labelPlacement="end"
+                    name={"strings_" + key}
+                    checked={value}
+                  />
+                )
+              }
             </AccordionDetails>
           </Accordion>
 
@@ -393,30 +259,19 @@ const Category: React.FC = () => {
               <Typography>Frets</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="19"
-                labelPlacement="end"
-                name="frets_19"
-                checked={value.frets[19]}
-              />
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="20"
-                labelPlacement="end"
-                name="frets_20"
-                checked={value.frets[20]}
-              />
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="22"
-                labelPlacement="end"
-                name="frets_22"
-                checked={value.frets[22]}
-              />
+              {
+                Object.entries(category.frets).map(([key, value]) => 
+                  <FormControlLabel
+                    key={key}
+                    value="end"
+                    control={<Checkbox color="primary" onChange={checkboxChange} />}
+                    label={key}
+                    labelPlacement="end"
+                    name={"frets_" + key}
+                    checked={value}
+                  />
+                )
+              }
             </AccordionDetails>
           </Accordion>
 
@@ -425,30 +280,19 @@ const Category: React.FC = () => {
               <Typography>Brand</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="Fender"
-                labelPlacement="end"
-                name="brand_Fender"
-                checked={value.brand.Fender}
-              />
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="Martinez"
-                labelPlacement="end"
-                name="brand_Martinez"
-                checked={value.brand.Martinez}
-              />
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="Sigma"
-                labelPlacement="end"
-                name="brand_Sigma"
-                checked={value.brand.Sigma}
-              />
+              {
+                Object.entries(category.brand).map(([key, value]) => 
+                  <FormControlLabel
+                    key={key}
+                    value="end"
+                    control={<Checkbox color="primary" onChange={checkboxChange} />}
+                    label={key}
+                    labelPlacement="end"
+                    name={"brand_" + key}
+                    checked={value}
+                  />
+                )
+              }
             </AccordionDetails>
           </Accordion>
 
@@ -457,44 +301,41 @@ const Category: React.FC = () => {
               <Typography>Orientation</Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.details}>
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="Left"
-                labelPlacement="end"
-                name="orientation_left"
-                checked={value.orientation.left}
-              />
-              <FormControlLabel
-                value="end"
-                control={<Checkbox color="primary" onChange={checkboxChange} />}
-                label="Right"
-                labelPlacement="end"
-                name="orientation_right"
-                checked={value.orientation.right}
-              />
+              {
+                Object.entries(category.orientation).map(([key, value]) => 
+                  <FormControlLabel
+                    key={key}
+                    value="end"
+                    control={<Checkbox color="primary" onChange={checkboxChange} />}
+                    label={key}
+                    labelPlacement="end"
+                    name={"orientation_" + key}
+                    checked={value}
+                  />
+                )
+              }
             </AccordionDetails>
           </Accordion>
 
           <Paper className={classes.price}>
             <Typography>Price:</Typography>
             <Slider
-              value={value.price}
+              value={category.price}
               onChange={handleChange}
               valueLabelDisplay="auto"
               min={0}
-              max={550}
+              max={150}
               step={10}
             />
-            <Typography gutterBottom>Min: {value.price[0]}$</Typography>
-            <Typography>Max: {value.price[1]}$</Typography>
+            <Typography gutterBottom>Min: {category.price[0]}$</Typography>
+            <Typography>Max: {category.price[1]}$</Typography>
           </Paper>
           
         </div>
 
         <div className={classes.items}>
           {
-            items.map((item, i) =>
+            filteredInstruments.map((item, i) =>
               <Card className={classes.product} elevation={3} key={i}>
                 <CardMedia
                   className={classes.img}
@@ -504,7 +345,7 @@ const Category: React.FC = () => {
 
                 <Box flexGrow='1' display='flex' alignItems='center' width="100%">
                   <Typography gutterBottom variant="body1" align="center" className={classes.title}>
-                    {item.title}
+                    {item.name}
                   </Typography>
                 </Box>
 
