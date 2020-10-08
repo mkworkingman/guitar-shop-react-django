@@ -98,7 +98,7 @@ interface ParamTypes {
 //   [key: string]: T,
 // }
 
-// type IValues = IIndexable & {
+// interface IValues {
 //   strings: {
 //     6: boolean
 //     12: boolean,
@@ -124,6 +124,22 @@ interface ParamTypes {
 //   price: number[]
 // }
 
+interface IValues {
+  strings: {
+    [key: number]: any
+  },
+  frets: {
+    [key: number]: any
+  },
+  brand: {
+    [key: string]: any
+  },
+  orientation: {
+    [key: string]: any
+  },
+  price: number[]
+}
+
 const Category: React.FC = () => {
   const classes = useStyles();
   const { name } = useParams<ParamTypes>();
@@ -147,22 +163,70 @@ const Category: React.FC = () => {
   const { loading, error, data } = useQuery(DISC);
   
   const [itemsgql, setItemsgql] = useState<any[]>([]);
+  const [category, setCategory] = useState<IValues>({
+    strings: {},
+    frets: {},
+    brand: {},
+    orientation: {},
+    price: []
+  });
 
   useEffect(() => {
     if (!loading && data) {
       const { instrumentListType } = data;
 
-      const strings: number[] = [];
-      const frets: number[] = [];
-      const brand: string[] = [];
-      const orientation: string[] = [];
+      const stringsInitial: number[] = [];
+      const fretsInitial: number[] = [];
+      const brandInitial: string[] = [];
+      const orientationInitial: string[] = [];
+      const priceInitial : number[] = [];
+
+      const distinct = (value: any, index: number, self: any) => {
+        return self.indexOf(value) === index;
+      }
 
       for (const item of instrumentListType) {
-        console.log(item);
+        stringsInitial.push(item.strings);
+        fretsInitial.push(item.frets);
+        brandInitial.push(item.brand);
+        orientationInitial.push(item.orientation);
+        priceInitial.push(item.discount || item.price);
       }
-      
+
+      const strings: number[] = stringsInitial.filter(distinct);
+      const frets: number[] = fretsInitial.filter(distinct);
+      const brand: string[] = brandInitial.filter(distinct);
+      const orientation: string[] = orientationInitial.filter(distinct);
+      const priceMax = Math.max(...priceInitial);
+
+      const value: IValues = {
+        strings: {},
+        frets: {},
+        brand: {},
+        orientation: {},
+        price: [0, priceMax]
+      };
+
+      for (const key of strings) {
+        value.strings[key] = false;
+      }
+
+      for (const key of frets) {
+        value.frets[key] = false;
+      }
+
+      for (const key of brand) {
+        value.brand[key] = false;
+      }
+
+      for (const key of orientation) {
+        value.orientation[key] = false;
+      }
+
+      console.log(value);
 
       setItemsgql(instrumentListType);
+      setCategory(value);
     }
   }, [loading, data]);
   
