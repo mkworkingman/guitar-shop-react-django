@@ -47,7 +47,12 @@ const useStyles = makeStyles({
   },
   title: {
     width: '100%'
-  }
+  },
+  discount: {
+    textDecoration: 'line-through',
+    fontSize: '0.9rem',
+    color: '#d00000'
+  },
 });
 
 interface ParamTypes {
@@ -94,6 +99,7 @@ const Category: React.FC = () => {
   const { loading, data } = useQuery(DISC);
   
   const [instruments, setInstruments] = useState<any[]>([]);
+  const [maxPrice, setMaxPrice] = useState<number>(100);
   const [filteredInstruments, setFilteredInstruments] = useState<any[]>([]);
   const [category, setCategory] = useState<IValues>({
     strings: {},
@@ -102,6 +108,25 @@ const Category: React.FC = () => {
     orientation: {},
     price: []
   });
+
+  const checkboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const [property, propertyName] = e.target.name.split('_');
+
+    setCategory({
+      ...category,
+      [property]: {
+        ...category[property],
+        [propertyName]: e.target.checked
+      }
+    });
+  };
+
+  const sliderChange = (e: any, newValue: number | number[]) => {
+    setCategory({
+      ...category,
+      price: newValue as number[]
+    });
+  };
 
   useEffect(() => {
     if (!loading && data) {
@@ -156,29 +181,11 @@ const Category: React.FC = () => {
       }
 
       setInstruments(instrumentListType);
+      setMaxPrice(priceMax);
       setFilteredInstruments(instrumentListType);
       setCategory(value);
     }
   }, [loading, data]);
-
-  const checkboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const [property, propertyName] = e.target.name.split('_');
-
-    setCategory({
-      ...category,
-      [property]: {
-        ...category[property],
-        [propertyName]: e.target.checked
-      }
-    });
-  };
-
-  const handleChange = (e: any, newValue: number | number[]) => {
-    setCategory({
-      ...category,
-      price: newValue as number[]
-    });
-  };
 
   useEffect(() => {
     const strings: number[] = [];
@@ -233,7 +240,7 @@ const Category: React.FC = () => {
     return (
       <Paper className={classes.category}>
         <div className={classes.properties}>
-          <Accordion>
+          <Accordion disabled={instruments.length === 0}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Strings</Typography>
             </AccordionSummary>
@@ -254,7 +261,7 @@ const Category: React.FC = () => {
             </AccordionDetails>
           </Accordion>
 
-          <Accordion>
+          <Accordion disabled={instruments.length === 0}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Frets</Typography>
             </AccordionSummary>
@@ -275,7 +282,7 @@ const Category: React.FC = () => {
             </AccordionDetails>
           </Accordion>
 
-          <Accordion>
+          <Accordion disabled={instruments.length === 0}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Brand</Typography>
             </AccordionSummary>
@@ -296,7 +303,7 @@ const Category: React.FC = () => {
             </AccordionDetails>
           </Accordion>
 
-          <Accordion>
+          <Accordion disabled={instruments.length === 0}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Typography>Orientation</Typography>
             </AccordionSummary>
@@ -321,14 +328,15 @@ const Category: React.FC = () => {
             <Typography>Price:</Typography>
             <Slider
               value={category.price}
-              onChange={handleChange}
+              onChange={sliderChange}
               valueLabelDisplay="auto"
               min={0}
-              max={150}
+              max={maxPrice}
               step={10}
+              disabled={instruments.length === 0}
             />
-            <Typography gutterBottom>Min: {category.price[0]}$</Typography>
-            <Typography>Max: {category.price[1]}$</Typography>
+            <Typography gutterBottom>Min: {Boolean(category.price[0]) ? category.price[0] : 0}$</Typography>
+            <Typography>Max: {isFinite(category.price[1]) ? category.price[1] : 0}$</Typography>
           </Paper>
           
         </div>
@@ -351,7 +359,7 @@ const Category: React.FC = () => {
 
                 <Box mb={0.75}>
                   <Typography>
-                    <span>{item.price}$</span>
+                    <span className={item.discount && classes.discount}>{item.price}$</span>
                     {item.discount && <span> {item.discount}$</span>}
                   </Typography>
                 </Box>

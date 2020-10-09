@@ -43,6 +43,9 @@ const useStyles = makeStyles({
   },
   rating: {
     margin: theme.spacing(0.75, 0)
+  },
+  title: {
+    width: '100%'
   }
 });
 
@@ -74,22 +77,24 @@ const Discount: React.FC = () => {
       let n = 4;
       const { disc } = data;
 
-      let result = [];
+      const result = [];
       let len = disc.length;
-      let taken = new Array(len);
+      const taken = new Array(len);
 
-      if (n > len)
+      if (n >= len) {
         setDiscountItems(disc);
-        
-      while (n--) {
-        let x = Math.floor(Math.random() * len);
-        const test = disc[x in taken ? taken[x] : x];
-
-        result[n] = test;
-        taken[x] = --len in taken ? taken[len] : len;
+      } else {
+        while (n--) {
+          let x = Math.floor(Math.random() * len);
+          const test = disc[x in taken ? taken[x] : x];
+  
+          result[n] = test;
+          taken[x] = --len in taken ? taken[len] : len;
+        }
+  
+        setDiscountItems(result);
       }
-
-      setDiscountItems(result);
+        
     }
   }, [loading, data]);
 
@@ -111,7 +116,7 @@ const Discount: React.FC = () => {
               />
 
               <Box flexGrow='1' display='flex' alignItems='center' width="100%">
-                <Typography gutterBottom variant="body1" align="center">
+                <Typography gutterBottom variant="body1" align="center" className={classes.title}>
                   {item.name}
                 </Typography>
               </Box>
@@ -125,7 +130,6 @@ const Discount: React.FC = () => {
               <Button variant="contained" color="primary" size="small">
                 To Card
               </Button>
-
             </Card>
           )
         }

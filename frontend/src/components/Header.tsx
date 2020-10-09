@@ -4,6 +4,7 @@ import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles({
   mobileView: {
@@ -27,6 +28,10 @@ const useStyles = makeStyles({
   },
   wide: {
     flexGrow: 1
+  },
+  logo: {
+    color: '#ffffff',
+    textDecoration: 'none'
   }
 });
 
@@ -89,9 +94,11 @@ const Header: React.FC = () => {
   return (
     <AppBar position="fixed" className={classes.appbar} >
       <Toolbar className={classes.toolbar}>
-        <Typography variant="h6">
-          Music Shop
-        </Typography>
+        <Link to="/" className={classes.logo}>
+          <Typography variant="h6">
+            Music Shop
+          </Typography>
+        </Link>
         <div className={classes.wide}></div>
         {navbarButtonsMobile}
         {navbarButtons}
