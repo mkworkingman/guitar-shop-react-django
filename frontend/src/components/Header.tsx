@@ -184,7 +184,7 @@ const Header: React.FC = () => {
       </Dialog>
 
       <Dialog open={openDialoge === 'register'} onClose={handleCloseDialoge} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
+        <DialogTitle id="form-dialog-title">Register</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus

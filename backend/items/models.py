@@ -14,6 +14,15 @@ INSTRUMENT_TYPES = (
     ('ukulele', 'Ukulele')
 )
 
+class Siteuser(models.Model):
+    id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=22)
+    email = models.EmailField(max_length=250)
+    password = models.CharField(max_length=250)
+
+    def __str__(self):
+        return self.username
+
 class Instrument(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
