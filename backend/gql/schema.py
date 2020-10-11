@@ -43,11 +43,16 @@ class CreateUser(graphene.Mutation):
         username = graphene.String()
         email = graphene.String()
         password = graphene.String()
+        password2 = graphene.String()
 
-    def mutate(self, info, username, email, password):
+    def mutate(self, info, username, email, password, password2):
+
+        if password == password2:
+            print("noice")
+
         user = Siteuser(username=username, email=email, password=password)
         user.save()
-    
+
         return CreateUser(
             id=user.id,
             username=user.username,
