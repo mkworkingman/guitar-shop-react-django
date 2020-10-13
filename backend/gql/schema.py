@@ -29,7 +29,7 @@ class Query(graphene.ObjectType):
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
-    
+
     def resolve_disc(self, info):
         instrument_queryset = Instrument.objects.filter(discount__isnull=False)
         return instrument_queryset
@@ -71,15 +71,19 @@ class CreateUser(graphene.Mutation):
         if len(username) == 0:
             errors.append('Please enter your username.')
         else:
+            if Siteuser.objects.filter(username=username).exists():
+                errors.append('Username already exists.')
             if len(username) < 3 or len(username) > 22:
                 errors.append('Usename must have from 3 to 22 characters.')
-
             if not re.match(r"^[A-Za-z0-9_-]*$", username):
                 errors.append('Username must contain only English letters, numbers, underscores and hyphens.')
-        
+
         if len(email) == 0:
             errors.append('Please enter your email.')
-        elif not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
+        else:
+            if Siteuser.objects.filter(email=email).exists():
+                errors.append('Email already exists.')
+            if not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
                 errors.append('Email is not valid.')
 
         if len(password) == 0:
@@ -93,7 +97,7 @@ class CreateUser(graphene.Mutation):
                 errors.append('Password must have at least one number.')
             if re.match(r"^[^A-Za-z]*$", password):
                 errors.append('Password must have at least one English letter.')
-        
+
         if password != password2:
             errors.append('Passwords do not match.')
 
