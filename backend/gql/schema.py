@@ -3,6 +3,10 @@ from items.models import Instrument, Siteuser
 from graphene_django.types import DjangoObjectType
 import re
 
+class ValidationErrors:
+    def __init__(self, errors):
+        self.errors = errors
+
 class SiteuserType(DjangoObjectType):
     class Meta:
         model = Siteuser
@@ -65,48 +69,41 @@ class CreateUser(graphene.Mutation):
         password_test = isEnglish(password)
 
         if len(username) == 0:
-            errors.append("Please enter your username.")
+            errors.append('Please enter your username.')
         else:
             if len(username) < 3 or len(username) > 22:
-                errors.append("Usename must have from 3 to 22 characters.")
+                errors.append('Usename must have from 3 to 22 characters.')
 
             if not re.match(r"^[A-Za-z0-9_-]*$", username):
-                errors.append("Username must contain only English letters, numbers, underscores and hyphens.")
+                errors.append('Username must contain only English letters, numbers, underscores and hyphens.')
         
         if len(email) == 0:
-            errors.append("Please enter your email.")
+            errors.append('Please enter your email.')
         elif not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-                errors.append("Email is not valid.")
+                errors.append('Email is not valid.')
 
         if len(password) == 0:
-            errors.append("Please enter your password.")
+            errors.append('Please enter your password.')
         else:
             if len(password) < 5:
-                errors.append("Password at least must have 6 symbols.")
+                errors.append('Password at least must have 6 symbols.')
             if not password_test:
-                errors.append("Password must contain English letters.")
+                errors.append('Password must contain English letters.')
             if re.match(r"\D*$", password):
-                errors.append("Password must have at least one number.")
+                errors.append('Password must have at least one number.')
             if re.match(r"^[^A-Za-z]*$", password):
-                errors.append("Password must have at least one English letter.")
+                errors.append('Password must have at least one English letter.')
         
         if password != password2:
-            errors.append("Passwords don't match.")
+            errors.append('Passwords do not match.')
 
-        print(errors)
-
-        user = Siteuser(username=username, email=email, password=password)
-        user.save()
-
-        return CreateUser(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            password=user.password
-        )
+        if not bool(errors):
+            user = Siteuser(username=username, email=email, password=password)
+            user.save()
+            return ValidationErrors(None)
+        return ValidationErrors(errors)
 
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
-# schema = graphene.Schema(query=Query, mutation=Mutation)
