@@ -27,14 +27,14 @@ interface CatalogueLink {
 }
 
 const links: CatalogueLink[] = [
+  { url: 'classic', text: 'Classic' },
   { url: 'acoustic', text: 'Acoustic' },
   { url: 'electric', text: 'Electric' },
   { url: 'electroacoustic', text: 'Electro Acoustic' },
   { url: 'bass', text: 'Bass' },
   { url: 'acousticbass', text: 'Acoustic Bass' },
   { url: 'ukulele', text: 'Ukulele' },
-  { url: 'equipment', text: 'Equipment' },
-  { url: 'literature', text: 'Literature' }
+  { url: 'balalaika', text: 'Balalaika' }
 ];
 
 const linksLen = links.length;

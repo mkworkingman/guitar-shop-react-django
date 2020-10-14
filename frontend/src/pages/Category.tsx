@@ -228,14 +228,14 @@ const Category: React.FC = () => {
 
   }, [category]);
 
-  if (name === 'acoustic' ||
+  if (name === 'classic' ||
+      name === 'acoustic' ||
       name === 'electric' ||
       name === 'electroacoustic' ||
       name === 'bass' ||
       name === 'acousticbass' ||
       name === 'ukulele' ||
-      name === 'equipment' ||
-      name === 'literature'
+      name === 'balalaika'
   ) {
     return (
       <Paper className={classes.category}>

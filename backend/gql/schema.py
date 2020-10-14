@@ -2,6 +2,7 @@ import graphene
 from items.models import Instrument, Siteuser
 from graphene_django.types import DjangoObjectType
 import re
+import bcrypt
 
 class ValidationErrors:
     def __init__(self, errors):
@@ -16,9 +17,11 @@ class InstrumentType(DjangoObjectType):
     class Meta:
         model = Instrument
         convert_choices_to_enum = False
+    
 
 class Query(graphene.ObjectType):
     users_list = graphene.List(SiteuserType)
+    logged = graphene.Field(SiteuserType, login=graphene.String(), password=graphene.String())
 
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
@@ -26,6 +29,16 @@ class Query(graphene.ObjectType):
 
     def resolve_users_list(self, info):
         return Siteuser.objects.all()
+
+    def resolve_logged(self, info, login, password):
+        if not Siteuser.objects.filter(username=login).exists():
+            raise Exception('Username does not exist.')
+
+        hashed = Siteuser.objects.filter(username=login)[0].password[2:-1]
+        if not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
+            raise Exception('Password does not match.')
+        
+        return Siteuser.objects.filter(username=login)[0]
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
@@ -69,42 +82,44 @@ class CreateUser(graphene.Mutation):
         password_test = isEnglish(password)
 
         if len(username) == 0:
-            errors.append('Please enter your username.')
+            errors.append('username_empty')
         else:
             if Siteuser.objects.filter(username=username).exists():
-                errors.append('Username already exists.')
+                errors.append('username_exists')
             if len(username) < 3 or len(username) > 22:
-                errors.append('Usename must have from 3 to 22 characters.')
+                errors.append('username_length')
             if not re.match(r"^[A-Za-z0-9_-]*$", username):
-                errors.append('Username must contain only English letters, numbers, underscores and hyphens.')
+                errors.append('username_characters')
 
         if len(email) == 0:
-            errors.append('Please enter your email.')
+            errors.append('email_empty')
         else:
             if Siteuser.objects.filter(email=email).exists():
-                errors.append('Email already exists.')
+                errors.append('email_exists')
             if not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-                errors.append('Email is not valid.')
+                errors.append('email_not_valid')
 
         if len(password) == 0:
-            errors.append('Please enter your password.')
+            errors.append('password_empty')
         else:
             if len(password) < 5:
-                errors.append('Password at least must have 6 symbols.')
+                errors.append('password_length')
             if not password_test:
-                errors.append('Password must contain English letters.')
+                errors.append('password_english_letters')
             if re.match(r"\D*$", password):
-                errors.append('Password must have at least one number.')
+                errors.append('password_number')
             if re.match(r"^[^A-Za-z]*$", password):
-                errors.append('Password must have at least one English letter.')
+                errors.append('password_letter')
 
         if password != password2:
-            errors.append('Passwords do not match.')
+            errors.append('password2_no_match')
 
         if not bool(errors):
-            user = Siteuser(username=username, email=email, password=password)
+            hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
+
+            user = Siteuser(username=username, email=email, password=hashed_password)
             user.save()
-            return ValidationErrors(None)
+            return user
         return ValidationErrors(errors)
 
 class Mutation(graphene.ObjectType):
