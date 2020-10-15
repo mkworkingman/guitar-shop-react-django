@@ -31,14 +31,18 @@ class Query(graphene.ObjectType):
         return Siteuser.objects.all()
 
     def resolve_logged(self, info, login, password):
-        if not Siteuser.objects.filter(username=login).exists():
-            raise Exception('Username does not exist.')
+        login_type = 'email' if '@' in login else 'username'
+        print(login_type)
 
-        hashed = Siteuser.objects.filter(username=login)[0].password[2:-1]
+        # if not Siteuser.objects.filter(username=login).exists():
+        if not Siteuser.objects.filter(**{login_type: login}).exists():
+            raise Exception(login_type + '_not_exist')
+
+        hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
         if not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
-            raise Exception('Password does not match.')
+            raise Exception('password_not_match')
         
-        return Siteuser.objects.filter(username=login)[0]
+        return Siteuser.objects.filter(**{login_type: login})[0]
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
