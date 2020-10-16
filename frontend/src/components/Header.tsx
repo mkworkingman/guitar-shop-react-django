@@ -6,6 +6,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
 
+import { useQuery, gql } from '@apollo/client';
+
 const useStyles = makeStyles({
   mobileView: {
     display: 'block',
@@ -80,18 +82,40 @@ const Header: React.FC = () => {
     setOpenDialoge(false);
   };
 
-  const handleLogin = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      tryAuth();
+    }
+  }
+
+  const handleLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setLogin({
       ...login,
       [e.currentTarget.name]: e.currentTarget.value
     })
   };
 
-  const handleRegister = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRegister = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setRegister({
       ...register,
       [e.currentTarget.name]: e.currentTarget.value
     })
+  }
+
+  const tryAuth = () => {
+    console.log(login.login);
+    console.log(login.password);
+
+    // const LOGGED = gql`
+    //   {
+    //     logged(login: "test", password: "123123q"){
+    //       id,
+    //       username,
+    //       email
+    //     }
+    //   }
+    // `
   }
 
   const navbarButtonsMobile: JSX.Element = (
@@ -160,6 +184,7 @@ const Header: React.FC = () => {
             label="Login"
             fullWidth
             value={login.login}
+            onKeyDown={onKeyDown}
             onChange={handleLogin}
             multiline
           />
@@ -170,11 +195,12 @@ const Header: React.FC = () => {
             type="password"
             fullWidth
             value={login.password}
+            onKeyDown={onKeyDown}
             onChange={handleLogin}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialoge} color="primary">
+          <Button onClick={tryAuth} color="primary">
             Log In
           </Button>
           <Button onClick={handleCloseDialoge} color="primary">
@@ -194,6 +220,7 @@ const Header: React.FC = () => {
             fullWidth
             value={register.username}
             onChange={handleRegister}
+            onKeyDown={onKeyDown}
             multiline
           />
           <TextField
@@ -203,6 +230,7 @@ const Header: React.FC = () => {
             fullWidth
             value={register.email}
             onChange={handleRegister}
+            onKeyDown={onKeyDown}
           />
           <TextField
             margin="dense"
@@ -212,6 +240,7 @@ const Header: React.FC = () => {
             fullWidth
             value={register.password}
             onChange={handleRegister}
+            onKeyDown={onKeyDown}
           />
           <TextField
             margin="dense"
@@ -221,6 +250,7 @@ const Header: React.FC = () => {
             fullWidth
             value={register.password2}
             onChange={handleRegister}
+            onKeyDown={onKeyDown}
           />
         </DialogContent>
         <DialogActions>
