@@ -65,6 +65,7 @@ const Header: React.FC = () => {
     password: '',
     password2: ''
   });
+
   const LOGGED = gql`
     {
       logged(login: "test", password: "123123q"){

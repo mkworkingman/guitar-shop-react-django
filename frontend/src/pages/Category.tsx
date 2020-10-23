@@ -80,9 +80,9 @@ const Category: React.FC = () => {
   const classes = useStyles();
   const { name } = useParams<ParamTypes>();
 
-  const DISC = gql`
-    {
-      instrumentListType(inst: "${name}") {
+  const INSTRUMENT_LIST_TYPE = gql`
+    query instrumentListType($type: String!){
+      instrumentListType(inst: $type){
         id,
         name,
         instType,
@@ -96,7 +96,10 @@ const Category: React.FC = () => {
       }
     }
   `;
-  const { loading, data } = useQuery(DISC);
+
+  const { loading, data } = useQuery(INSTRUMENT_LIST_TYPE, {
+    variables: { type: name }
+  });
   
   const [instruments, setInstruments] = useState<any[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(100);
