@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
 
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql, useLazyQuery } from '@apollo/client';
 
 const useStyles = makeStyles({
   mobileView: {
@@ -58,13 +58,23 @@ const Header: React.FC = () => {
   const [login, setLogin] = useState<ILogin>({
     login: '',
     password: ''
-  })
+  });
   const [register, setRegister] = useState<IRegister>({
     username: '',
     email: '',
     password: '',
     password2: ''
-  })
+  });
+  const LOGGED = gql`
+    {
+      logged(login: "test", password: "123123q"){
+        id,
+        username,
+        email
+      }
+    }
+  `;
+  const [logged, {error, loading, data}] = useLazyQuery(LOGGED);
 
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
@@ -107,16 +117,14 @@ const Header: React.FC = () => {
     console.log(login.login);
     console.log(login.password);
 
-    // const LOGGED = gql`
-    //   {
-    //     logged(login: "test", password: "123123q"){
-    //       id,
-    //       username,
-    //       email
-    //     }
-    //   }
-    // `
+    logged({ variables: { login: 'test' } });
   }
+
+  useEffect(() => {
+    if (error) console.log(error.graphQLErrors)
+    console.log(loading);
+    console.log(data);
+  }, [error, loading, data])
 
   const navbarButtonsMobile: JSX.Element = (
     <div className={classes.mobileView}>
