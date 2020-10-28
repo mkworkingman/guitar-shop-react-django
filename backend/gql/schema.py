@@ -32,9 +32,18 @@ class Query(graphene.ObjectType):
 
     def resolve_logged(self, info, login, password):
         login_type = 'email' if '@' in login else 'username'
-        print(login_type)
+        login = login.strip()
+        password = password.strip()
 
-        # if not Siteuser.objects.filter(username=login).exists():
+        if len(login) == 0 and len(password) == 0:
+            raise Exception('empty_both')
+        
+        if len(login) == 0:
+            raise Exception('empty_login')
+
+        if len(password) == 0:
+            raise Exception('empty_password')
+
         if not Siteuser.objects.filter(**{login_type: login}).exists():
             raise Exception(login_type + '_not_exist')
 

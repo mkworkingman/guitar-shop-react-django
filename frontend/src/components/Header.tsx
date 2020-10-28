@@ -119,7 +119,7 @@ const Header: React.FC = () => {
   }
 
   useEffect(() => {
-    if (error) console.log(error.graphQLErrors)
+    if (error) console.log(error.graphQLErrors[0].message)
     console.log(loading);
     console.log(data);
   }, [error, loading, data])
@@ -193,6 +193,7 @@ const Header: React.FC = () => {
             onKeyDown={onKeyDown}
             onChange={handleLogin}
             multiline
+            disabled={loading}
           />
           <TextField
             margin="dense"
@@ -203,13 +204,14 @@ const Header: React.FC = () => {
             value={login.password}
             onKeyDown={onKeyDown}
             onChange={handleLogin}
+            disabled={loading}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={tryAuth} color="primary">
+          <Button onClick={tryAuth} color="primary" disabled={loading}>
             Log In
           </Button>
-          <Button onClick={handleCloseDialoge} color="primary">
+          <Button onClick={handleCloseDialoge} color="primary" disabled={loading}>
             Cancel
           </Button>
         </DialogActions>
