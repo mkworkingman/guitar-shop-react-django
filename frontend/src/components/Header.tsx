@@ -49,7 +49,6 @@ interface IRegister {
   password2: string
 }
 
-
 const Header: React.FC = () => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -67,14 +66,15 @@ const Header: React.FC = () => {
   });
 
   const LOGGED = gql`
-    {
-      logged(login: "test", password: "123123q"){
+    query logged($login: String!, $password: String!){
+      logged(login: $login, password: $password){
         id,
         username,
         email
       }
     }
   `;
+
   const [logged, {error, loading, data}] = useLazyQuery(LOGGED);
 
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -115,10 +115,7 @@ const Header: React.FC = () => {
   }
 
   const tryAuth = () => {
-    console.log(login.login);
-    console.log(login.password);
-
-    logged({ variables: { login: 'test' } });
+    logged({ variables: { login: login.login, password: login.password } });
   }
 
   useEffect(() => {
