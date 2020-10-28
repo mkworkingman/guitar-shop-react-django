@@ -20,38 +20,9 @@ class InstrumentType(DjangoObjectType):
     
 
 class Query(graphene.ObjectType):
-    users_list = graphene.List(SiteuserType)
-    logged = graphene.Field(SiteuserType, login=graphene.String(), password=graphene.String())
-
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
     instrument_list_type = graphene.List(InstrumentType, inst=graphene.String())
-
-    def resolve_users_list(self, info):
-        return Siteuser.objects.all()
-
-    def resolve_logged(self, info, login, password):
-        login_type = 'email' if '@' in login else 'username'
-        login = login.strip()
-        password = password.strip()
-
-        if len(login) == 0 and len(password) == 0:
-            raise Exception('empty_both')
-        
-        if len(login) == 0:
-            raise Exception('empty_login')
-
-        if len(password) == 0:
-            raise Exception('empty_password')
-
-        if not Siteuser.objects.filter(**{login_type: login}).exists():
-            raise Exception(login_type + '_not_exist')
-
-        hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
-        if not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
-            raise Exception('password_not_match')
-        
-        return Siteuser.objects.filter(**{login_type: login})[0]
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
@@ -64,8 +35,41 @@ class Query(graphene.ObjectType):
         instrument_queryset = Instrument.objects.filter(inst_type=inst)
         return instrument_queryset
 
+class LoginUser(graphene.Mutation):
+    username = graphene.String()
+    email = graphene.String()
+    errors = graphene.List(graphene.String)
+
+    class Arguments:
+        login = graphene.String()
+        password = graphene.String()
+
+    def mutate(self, info, login, password):
+        errors = []
+        login_type = 'email' if '@' in login else 'username'
+        login = login.strip()
+        password = password.strip()
+        # hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
+
+        if len(login) == 0:
+            errors.append('empty_login')
+
+        if len(password) == 0:
+            errors.append('empty_password')
+
+        if not Siteuser.objects.filter(**{login_type: login}).exists():
+            errors.append(login_type + '_not_exist')
+        else:
+            hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
+            if not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
+                errors.append('password_not_match')
+
+        if not bool(errors):
+            return Siteuser.objects.filter(**{login_type: login})[0]
+        return ValidationErrors(errors)
+
+
 class CreateUser(graphene.Mutation):
-    id = graphene.Int()
     username = graphene.String()
     email = graphene.String()
     password = graphene.String()
@@ -136,6 +140,7 @@ class CreateUser(graphene.Mutation):
         return ValidationErrors(errors)
 
 class Mutation(graphene.ObjectType):
+    login_user = LoginUser.Field()
     create_user = CreateUser.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
