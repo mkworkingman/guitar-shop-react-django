@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
+import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
 import { makeStyles } from '@material-ui/core/styles';
@@ -39,14 +39,24 @@ const useStyles = makeStyles({
 
 interface ILogin {
   login: string
-  password: string
+  password: string,
+  errors: {
+    login: null | string[],
+    password: null | string[]
+  }
 }
 
 interface IRegister {
   username: string,
   email: string,
   password: string,
-  password2: string
+  password2: string,
+  errors: {
+    username: null | string,
+    email: null | string,
+    password: null | string,
+    password2: null | string,
+  }
 }
 
 const Header: React.FC = () => {
@@ -57,16 +67,22 @@ const Header: React.FC = () => {
   const [login, setLogin] = useState<ILogin>({
     login: '',
     password: '',
-    // errors: {
-    //   login: null,
-    //   password: ''
-    // }
+    errors: {
+      login: null,
+      password: null
+    }
   });
   const [register, setRegister] = useState<IRegister>({
     username: '',
     email: '',
     password: '',
-    password2: ''
+    password2: '',
+    errors: {
+      username: null,
+      email: null,
+      password: null,
+      password2: null,
+    }
   });
 
   const LOGIN_USER = gql`
@@ -98,13 +114,6 @@ const Header: React.FC = () => {
     setOpenDialoge(false);
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      tryAuth();
-    }
-  }
-
   const handleLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setLogin({
       ...login,
@@ -123,8 +132,33 @@ const Header: React.FC = () => {
     logged({ variables: { login: login.login, password: login.password } });
   }
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      tryAuth();
+    }
+  }
+
   useEffect(() => {
-    if (data) console.log(data.loginUser)
+    if (data) {
+      if (data.loginUser.errors) {
+        setLogin({
+          ...login,
+          errors: data.loginUser.errors
+        });
+        
+      } else {
+        setLogin({
+          login: '',
+          password: '',
+          errors: {
+            login: null,
+            password: null
+          }
+        })
+        console.log("Logged!");
+      }
+    }
   }, [loading, data])
 
   const navbarButtonsMobile: JSX.Element = (
@@ -183,7 +217,7 @@ const Header: React.FC = () => {
         {navbarButtons}
       </Toolbar>
 
-      <Dialog open={openDialoge === 'login'} onClose={handleCloseDialoge} aria-labelledby="form-dialog-title">
+      <Dialog open={openDialoge === 'login'} onClose={handleCloseDialoge} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Login</DialogTitle>
         <DialogContent>
           <TextField
@@ -197,7 +231,11 @@ const Header: React.FC = () => {
             onChange={handleLogin}
             multiline
             disabled={loading}
+            error={!!login.errors.login && login.errors.login.length > 0}
           />
+          {login.errors.login && login.errors.login.map((error, i) => 
+            <DialogContentText key={i} color="error" variant="subtitle2" >{error}</DialogContentText>
+          )}
           <TextField
             margin="dense"
             name="password"
@@ -208,7 +246,11 @@ const Header: React.FC = () => {
             onKeyDown={onKeyDown}
             onChange={handleLogin}
             disabled={loading}
+            error={!!login.errors.password && login.errors.password.length > 0}
           />
+          {login.errors.password && login.errors.password.map((error, i) => 
+            <DialogContentText key={i} color="error" variant="subtitle2" >{error}</DialogContentText>
+          )}
         </DialogContent>
         <DialogActions>
           <Button name="register" onClick={handleOpenDialoge} color="primary" disabled={loading}>

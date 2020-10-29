@@ -82,7 +82,7 @@ class CreateUser(graphene.Mutation):
     username = graphene.String()
     email = graphene.String()
     password = graphene.String()
-    errors = graphene.List(graphene.String)
+    errors = GenericScalar()
 
     class Arguments:
         username = graphene.String()
@@ -91,7 +91,13 @@ class CreateUser(graphene.Mutation):
         password2 = graphene.String()
 
     def mutate(self, info, username, email, password, password2):
-        errors = []
+        errors = {
+            'username': [],
+            'email': [],
+            'password': [],
+            'password2': []
+        }
+        valid = True
         username = username.strip()
         email = email.strip()
         password = password.strip()
@@ -108,39 +114,52 @@ class CreateUser(graphene.Mutation):
         password_test = isEnglish(password)
 
         if len(username) == 0:
-            errors.append('username_empty')
+            errors['username'].append('username_empty')
+            valid = False
         else:
             if Siteuser.objects.filter(username=username).exists():
-                errors.append('username_exists')
+                errors['username'].append('username_exists')
+                valid = False
             if len(username) < 3 or len(username) > 22:
-                errors.append('username_length')
+                errors['username'].append('username_length')
+                valid = False
             if not re.match(r"^[A-Za-z0-9_-]*$", username):
-                errors.append('username_characters')
+                errors['username'].append('username_characters')
+                valid = False
 
         if len(email) == 0:
-            errors.append('email_empty')
+            errors['email'].append('email_empty')
+            valid = False
         else:
             if Siteuser.objects.filter(email=email).exists():
-                errors.append('email_exists')
+                errors['email'].append('email_exists')
+                valid = False
             if not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-                errors.append('email_not_valid')
+                errors['email'].append('email_not_valid')
+                valid = False
 
         if len(password) == 0:
-            errors.append('password_empty')
+            errors['password'].append('password_empty')
+            valid = False
         else:
             if len(password) < 5:
-                errors.append('password_length')
+                errors['password'].append('password_length')
+                valid = False
             if not password_test:
-                errors.append('password_english_letters')
+                errors['password'].append('password_english_letters')
+                valid = False
             if re.match(r"\D*$", password):
-                errors.append('password_number')
+                errors['password'].append('password_number')
+                valid = False
             if re.match(r"^[^A-Za-z]*$", password):
-                errors.append('password_letter')
+                errors['password'].append('password_letter')
+                valid = False
 
         if password != password2:
-            errors.append('password2_no_match')
+            errors['password2'].append('password2_no_match')
+            valid = False
 
-        if not bool(errors):
+        if valid:
             hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
 
             user = Siteuser(username=username, email=email, password=hashed_password)
