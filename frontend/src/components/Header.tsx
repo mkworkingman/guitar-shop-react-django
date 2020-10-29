@@ -52,10 +52,10 @@ interface IRegister {
   password: string,
   password2: string,
   errors: {
-    username: null | string,
-    email: null | string,
-    password: null | string,
-    password2: null | string,
+    username: null | string[],
+    email: null | string[],
+    password: null | string[],
+    password2: null | string[],
   }
 }
 
@@ -98,6 +98,16 @@ const Header: React.FC = () => {
 
   const [logged, {loading, data}] = useMutation(LOGIN_USER);
 
+  const REGISTER_USER = gql`
+    mutation createUser($username: String!, $email: String!, $password: String!, $password2: String!){
+      createUser(username: $username, email: $email, password: $password, password2: $password2){
+        errors
+      }
+    }
+  `;
+
+  const [registered, {loading: registerLoading, data: registerData}] = useMutation(REGISTER_USER);
+
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
   };
@@ -129,7 +139,23 @@ const Header: React.FC = () => {
   }
 
   const tryAuth = () => {
-    logged({ variables: { login: login.login, password: login.password } });
+    if (openDialoge === 'login') {
+      logged({ 
+        variables: { 
+          login: login.login,
+          password: login.password
+        }
+      });
+    } else {
+      registered({ 
+        variables: { 
+          username: register.username,
+          email: register.email,
+          password: register.password,
+          password2: register.password2
+        }
+      });
+    }
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -146,7 +172,6 @@ const Header: React.FC = () => {
           ...login,
           errors: data.loginUser.errors
         });
-        
       } else {
         setLogin({
           login: '',
@@ -159,7 +184,20 @@ const Header: React.FC = () => {
         console.log("Logged!");
       }
     }
-  }, [loading, data])
+  }, [data])
+
+  useEffect(() => {
+    if (registerData) {
+      if (registerData.createUser.errors) {
+        setRegister({
+          ...register,
+          errors: registerData.createUser.errors
+        });
+      } else {
+        console.log('Registered!')
+      }
+    }
+  }, [registerData])
 
   const navbarButtonsMobile: JSX.Element = (
     <div className={classes.mobileView}>
@@ -265,7 +303,7 @@ const Header: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openDialoge === 'register'} onClose={handleCloseDialoge} aria-labelledby="form-dialog-title">
+      <Dialog open={openDialoge === 'register'} onClose={handleCloseDialoge} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Register</DialogTitle>
         <DialogContent>
           <TextField
@@ -278,7 +316,12 @@ const Header: React.FC = () => {
             onChange={handleRegister}
             onKeyDown={onKeyDown}
             multiline
+            disabled={registerLoading}
+            error={!!register.errors.username && register.errors.username.length > 0}
           />
+          {register.errors.username && register.errors.username.map((error, i) => 
+            <DialogContentText key={i} color="error" variant="subtitle2" >{error}</DialogContentText>
+          )}
           <TextField
             margin="dense"
             name="email"
@@ -287,7 +330,13 @@ const Header: React.FC = () => {
             value={register.email}
             onChange={handleRegister}
             onKeyDown={onKeyDown}
+            multiline
+            disabled={registerLoading}
+            error={!!register.errors.email && register.errors.email.length > 0}
           />
+          {register.errors.email && register.errors.email.map((error, i) => 
+            <DialogContentText key={i} color="error" variant="subtitle2" >{error}</DialogContentText>
+          )}
           <TextField
             margin="dense"
             name="password"
@@ -297,7 +346,12 @@ const Header: React.FC = () => {
             value={register.password}
             onChange={handleRegister}
             onKeyDown={onKeyDown}
+            disabled={registerLoading}
+            error={!!register.errors.password && register.errors.password.length > 0}
           />
+          {register.errors.password && register.errors.password.map((error, i) => 
+            <DialogContentText key={i} color="error" variant="subtitle2" >{error}</DialogContentText>
+          )}
           <TextField
             margin="dense"
             name="password2"
@@ -307,16 +361,21 @@ const Header: React.FC = () => {
             value={register.password2}
             onChange={handleRegister}
             onKeyDown={onKeyDown}
+            disabled={registerLoading}
+            error={!!register.errors.password2 && register.errors.password2.length > 0}
           />
+          {register.errors.password2 && register.errors.password2.map((error, i) => 
+            <DialogContentText key={i} color="error" variant="subtitle2" >{error}</DialogContentText>
+          )}
         </DialogContent>
         <DialogActions>
-        <Button name="login" onClick={handleOpenDialoge} color="primary" disabled={loading}>
+        <Button name="login" onClick={handleOpenDialoge} color="primary" disabled={registerLoading}>
             Log In Now
           </Button>
-          <Button onClick={handleCloseDialoge} color="primary">
+          <Button onClick={tryAuth} color="primary" disabled={registerLoading}>
             Register
           </Button>
-          <Button onClick={handleCloseDialoge} color="primary">
+          <Button onClick={handleCloseDialoge} color="primary" disabled={registerLoading}>
             Cancel
           </Button>
         </DialogActions>

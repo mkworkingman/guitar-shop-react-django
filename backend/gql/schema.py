@@ -18,7 +18,6 @@ class InstrumentType(DjangoObjectType):
     class Meta:
         model = Instrument
         convert_choices_to_enum = False
-    
 
 class Query(graphene.ObjectType):
     instrument_list = graphene.List(InstrumentType)
@@ -114,49 +113,49 @@ class CreateUser(graphene.Mutation):
         password_test = isEnglish(password)
 
         if len(username) == 0:
-            errors['username'].append('username_empty')
+            errors['username'].append('Please, enter username.')
             valid = False
         else:
             if Siteuser.objects.filter(username=username).exists():
-                errors['username'].append('username_exists')
+                errors['username'].append('This Username already exists.')
                 valid = False
             if len(username) < 3 or len(username) > 22:
-                errors['username'].append('username_length')
+                errors['username'].append('Usename must have from 3 to 22 characters.')
                 valid = False
             if not re.match(r"^[A-Za-z0-9_-]*$", username):
-                errors['username'].append('username_characters')
+                errors['username'].append('Username can contain only English letters, numbers, underscores and hyphens.')
                 valid = False
 
         if len(email) == 0:
-            errors['email'].append('email_empty')
+            errors['email'].append('Please, enter email.')
             valid = False
         else:
             if Siteuser.objects.filter(email=email).exists():
-                errors['email'].append('email_exists')
+                errors['email'].append('This Email already exists.')
                 valid = False
             if not re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)", email):
-                errors['email'].append('email_not_valid')
+                errors['email'].append('Tihs Email is not valid.')
                 valid = False
 
         if len(password) == 0:
-            errors['password'].append('password_empty')
+            errors['password'].append('Please, enter password.')
             valid = False
         else:
             if len(password) < 5:
-                errors['password'].append('password_length')
+                errors['password'].append('Password must have at least 5 characters.')
                 valid = False
             if not password_test:
-                errors['password'].append('password_english_letters')
+                errors['password'].append('Password can have only English letters.')
                 valid = False
             if re.match(r"\D*$", password):
-                errors['password'].append('password_number')
+                errors['password'].append('Password must have at least one number.')
                 valid = False
             if re.match(r"^[^A-Za-z]*$", password):
-                errors['password'].append('password_letter')
+                errors['password'].append('Password must have at least one letter.')
                 valid = False
 
         if password != password2:
-            errors['password2'].append('password2_no_match')
+            errors['password2'].append('Passwords does not match.')
             valid = False
 
         if valid:
