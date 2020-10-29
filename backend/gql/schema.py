@@ -1,4 +1,5 @@
 import graphene
+from graphene.types.generic import GenericScalar
 from items.models import Instrument, Siteuser
 from graphene_django.types import DjangoObjectType
 import re
@@ -39,31 +40,39 @@ class LoginUser(graphene.Mutation):
     id = graphene.Int()
     username = graphene.String()
     email = graphene.String()
-    errors = graphene.List(graphene.String)
+    errors = GenericScalar()
 
     class Arguments:
         login = graphene.String()
         password = graphene.String()
 
     def mutate(self, info, login, password):
-        errors = []
+        errors = {
+            'login': [],
+            'password': []
+        }
+        valid = True
         login_type = 'email' if '@' in login else 'username'
         login = login.strip()
         password = password.strip()
 
         if len(login) == 0:
-            errors.append('empty_login')
+            errors['login'].append('Please, enter your login.')
+            valid = False
         elif not Siteuser.objects.filter(**{login_type: login}).exists():
-            errors.append(login_type + '_not_exist')
+            errors['login'].append(login_type.capitalize() + ' does not exist.')
+            valid = False
         else:
             hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
             if len(password) > 0 and not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
-                errors.append('password_not_match')
+                errors['password'].append('Password does not match.')
+                valid = False
 
         if len(password) == 0:
-            errors.append('empty_password')
+            errors['password'].append('Please, enter your password.')
+            valid = False
 
-        if not bool(errors):
+        if valid:
             return Siteuser.objects.filter(**{login_type: login})[0]
         return ValidationErrors(errors)
 
