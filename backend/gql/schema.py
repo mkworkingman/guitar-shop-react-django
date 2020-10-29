@@ -36,6 +36,7 @@ class Query(graphene.ObjectType):
         return instrument_queryset
 
 class LoginUser(graphene.Mutation):
+    id = graphene.Int()
     username = graphene.String()
     email = graphene.String()
     errors = graphene.List(graphene.String)
@@ -49,20 +50,18 @@ class LoginUser(graphene.Mutation):
         login_type = 'email' if '@' in login else 'username'
         login = login.strip()
         password = password.strip()
-        # hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
 
         if len(login) == 0:
             errors.append('empty_login')
-
-        if len(password) == 0:
-            errors.append('empty_password')
-
-        if not Siteuser.objects.filter(**{login_type: login}).exists():
+        elif not Siteuser.objects.filter(**{login_type: login}).exists():
             errors.append(login_type + '_not_exist')
         else:
             hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
-            if not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
+            if len(password) > 0 and not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
                 errors.append('password_not_match')
+
+        if len(password) == 0:
+            errors.append('empty_password')
 
         if not bool(errors):
             return Siteuser.objects.filter(**{login_type: login})[0]
@@ -70,6 +69,7 @@ class LoginUser(graphene.Mutation):
 
 
 class CreateUser(graphene.Mutation):
+    id = graphene.Int()
     username = graphene.String()
     email = graphene.String()
     password = graphene.String()

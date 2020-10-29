@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
 
-import { useQuery, gql, useLazyQuery } from '@apollo/client';
+import { gql, useMutation } from '@apollo/client';
 
 const useStyles = makeStyles({
   mobileView: {
@@ -56,7 +56,11 @@ const Header: React.FC = () => {
   const [openDialoge, setOpenDialoge] = useState<boolean | string>(false);
   const [login, setLogin] = useState<ILogin>({
     login: '',
-    password: ''
+    password: '',
+    // errors: {
+    //   login: null,
+    //   password: ''
+    // }
   });
   const [register, setRegister] = useState<IRegister>({
     username: '',
@@ -65,17 +69,18 @@ const Header: React.FC = () => {
     password2: ''
   });
 
-  const LOGGED = gql`
-    query logged($login: String!, $password: String!){
-      logged(login: $login, password: $password){
+  const LOGIN_USER = gql`
+    mutation loginUser($login: String!, $password: String!){
+      loginUser(login: $login, password: $password){
         id,
         username,
-        email
+        email,
+        errors
       }
     }
   `;
 
-  const [logged, {error, loading, data}] = useLazyQuery(LOGGED);
+  const [logged, {loading, data}] = useMutation(LOGIN_USER);
 
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(e.currentTarget);
@@ -119,10 +124,8 @@ const Header: React.FC = () => {
   }
 
   useEffect(() => {
-    if (error) console.log(error.graphQLErrors[0].message)
-    console.log(loading);
-    console.log(data);
-  }, [error, loading, data])
+    if (data) console.log(data.loginUser)
+  }, [loading, data])
 
   const navbarButtonsMobile: JSX.Element = (
     <div className={classes.mobileView}>
@@ -208,6 +211,9 @@ const Header: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
+          <Button name="register" onClick={handleOpenDialoge} color="primary" disabled={loading}>
+            Register Now
+          </Button>
           <Button onClick={tryAuth} color="primary" disabled={loading}>
             Log In
           </Button>
@@ -262,6 +268,9 @@ const Header: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
+        <Button name="login" onClick={handleOpenDialoge} color="primary" disabled={loading}>
+            Log In Now
+          </Button>
           <Button onClick={handleCloseDialoge} color="primary">
             Register
           </Button>
