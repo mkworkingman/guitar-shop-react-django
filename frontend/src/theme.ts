@@ -1,5 +1,6 @@
 import './font.css';
 import { createMuiTheme } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 
 export default createMuiTheme({
   palette: {
@@ -8,7 +9,8 @@ export default createMuiTheme({
       light: '#edf6ff'
     },
     secondary: {
-      main: '#000000'
+      main: '#000000',
+      light: fade('#000000', 0.2)
     }
   },
   typography: {

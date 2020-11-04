@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
+import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, Box, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
 import { makeStyles } from '@material-ui/core/styles';
@@ -180,8 +180,9 @@ const Header: React.FC = () => {
             login: null,
             password: null
           }
-        })
+        });
         console.log("Logged!");
+        console.log(data);
       }
     }
   }, [data])
@@ -194,7 +195,19 @@ const Header: React.FC = () => {
           errors: registerData.createUser.errors
         });
       } else {
-        console.log('Registered!')
+        setRegister({
+          username: '',
+          email: '',
+          password: '',
+          password2: '',
+          errors: {
+            username: null,
+            email: null,
+            password: null,
+            password2: null,
+          }
+        });
+        setOpenDialoge('login');
       }
     }
   }, [registerData])
@@ -256,6 +269,14 @@ const Header: React.FC = () => {
       </Toolbar>
 
       <Dialog open={openDialoge === 'login'} onClose={handleCloseDialoge} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
+        <Box
+          display={loading || registerLoading ? "block" : "none"}
+          width="100%"
+          height="100%"
+          position="absolute"
+          bgcolor="secondary.light"
+          zIndex={2}>
+        </Box>
         <DialogTitle id="form-dialog-title">Login</DialogTitle>
         <DialogContent>
           <TextField
@@ -268,7 +289,6 @@ const Header: React.FC = () => {
             onKeyDown={onKeyDown}
             onChange={handleLogin}
             multiline
-            disabled={loading}
             error={!!login.errors.login && login.errors.login.length > 0}
           />
           {login.errors.login && login.errors.login.map((error, i) => 
@@ -283,7 +303,6 @@ const Header: React.FC = () => {
             value={login.password}
             onKeyDown={onKeyDown}
             onChange={handleLogin}
-            disabled={loading}
             error={!!login.errors.password && login.errors.password.length > 0}
           />
           {login.errors.password && login.errors.password.map((error, i) => 
@@ -304,6 +323,14 @@ const Header: React.FC = () => {
       </Dialog>
 
       <Dialog open={openDialoge === 'register'} onClose={handleCloseDialoge} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
+        <Box
+          display={loading || registerLoading ? "block" : "none"}
+          width="100%"
+          height="100%"
+          position="absolute"
+          bgcolor="secondary.light"
+          zIndex={2}>
+        </Box>
         <DialogTitle id="form-dialog-title">Register</DialogTitle>
         <DialogContent>
           <TextField
@@ -316,7 +343,6 @@ const Header: React.FC = () => {
             onChange={handleRegister}
             onKeyDown={onKeyDown}
             multiline
-            disabled={registerLoading}
             error={!!register.errors.username && register.errors.username.length > 0}
           />
           {register.errors.username && register.errors.username.map((error, i) => 
@@ -331,7 +357,6 @@ const Header: React.FC = () => {
             onChange={handleRegister}
             onKeyDown={onKeyDown}
             multiline
-            disabled={registerLoading}
             error={!!register.errors.email && register.errors.email.length > 0}
           />
           {register.errors.email && register.errors.email.map((error, i) => 
@@ -346,7 +371,6 @@ const Header: React.FC = () => {
             value={register.password}
             onChange={handleRegister}
             onKeyDown={onKeyDown}
-            disabled={registerLoading}
             error={!!register.errors.password && register.errors.password.length > 0}
           />
           {register.errors.password && register.errors.password.map((error, i) => 
@@ -361,7 +385,6 @@ const Header: React.FC = () => {
             value={register.password2}
             onChange={handleRegister}
             onKeyDown={onKeyDown}
-            disabled={registerLoading}
             error={!!register.errors.password2 && register.errors.password2.length > 0}
           />
           {register.errors.password2 && register.errors.password2.map((error, i) => 
