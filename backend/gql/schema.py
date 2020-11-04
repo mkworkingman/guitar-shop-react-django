@@ -3,7 +3,7 @@ from graphene.types.generic import GenericScalar
 from items.models import Instrument, Siteuser
 from graphene_django.types import DjangoObjectType
 import re
-import bcrypt
+import jwt
 
 class ValidationErrors:
     def __init__(self, errors):
@@ -63,7 +63,7 @@ class LoginUser(graphene.Mutation):
             valid = False
         else:
             hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
-            if len(password) > 0 and not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
+            if len(password) > 0 and jwt.decode(hashed, 'myTestKey!noiceone')['password'] != password:
                 errors['password'].append('Password does not match.')
                 valid = False
 
@@ -159,7 +159,7 @@ class CreateUser(graphene.Mutation):
             valid = False
 
         if valid:
-            hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
+            hashed_password = jwt.encode({'password': password}, 'myTestKey!noiceone')
 
             user = Siteuser(username=username, email=email, password=hashed_password)
             user.save()
