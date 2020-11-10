@@ -9,7 +9,9 @@ const client = new ApolloClient({
   link: new HttpLink({
     uri: 'http://127.0.0.1:8000/graphql'
   })
-})
+});
+
+window.addEventListener('storage', e => console.log('e'));
 
 ReactDOM.render(
   <ApolloProvider client={client}>

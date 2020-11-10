@@ -5,7 +5,7 @@ import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
-
+import jwt from "jsonwebtoken";
 import { gql, useMutation } from '@apollo/client';
 
 const useStyles = makeStyles({
@@ -88,9 +88,7 @@ const Header: React.FC = () => {
   const LOGIN_USER = gql`
     mutation loginUser($login: String!, $password: String!){
       loginUser(login: $login, password: $password){
-        id,
-        username,
-        email,
+        token,
         errors
       }
     }
@@ -181,8 +179,15 @@ const Header: React.FC = () => {
             password: null
           }
         });
-        console.log("Logged!");
-        console.log(data);
+
+        jwt.verify(data.loginUser.token, "myTestKey!noiceone", (err: any, decoded: any) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(decoded);
+            localStorage.setItem('auth_token', 'Bearer ' + data.loginUser.token)
+          }
+        });
       }
     }
   }, [data])

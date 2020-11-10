@@ -3,7 +3,13 @@ from graphene.types.generic import GenericScalar
 from items.models import Instrument, Siteuser
 from graphene_django.types import DjangoObjectType
 import re
+import bcrypt
 import jwt
+import datetime
+
+class AuthToken:
+    def __init__(self, token):
+        self.token = token
 
 class ValidationErrors:
     def __init__(self, errors):
@@ -36,9 +42,7 @@ class Query(graphene.ObjectType):
         return instrument_queryset
 
 class LoginUser(graphene.Mutation):
-    id = graphene.Int()
-    username = graphene.String()
-    email = graphene.String()
+    token = graphene.String()
     errors = GenericScalar()
 
     class Arguments:
@@ -63,7 +67,7 @@ class LoginUser(graphene.Mutation):
             valid = False
         else:
             hashed = Siteuser.objects.filter(**{login_type: login})[0].password[2:-1]
-            if len(password) > 0 and jwt.decode(hashed, 'myTestKey!noiceone')['password'] != password:
+            if len(password) > 0 and not bcrypt.checkpw(password.encode('utf8'), hashed.encode('utf8')):
                 errors['password'].append('Password does not match.')
                 valid = False
 
@@ -72,7 +76,14 @@ class LoginUser(graphene.Mutation):
             valid = False
 
         if valid:
-            return Siteuser.objects.filter(**{login_type: login})[0]
+            user = Siteuser.objects.filter(**{login_type: login})[0]
+            auth_token = jwt.encode({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
+            }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
+            return AuthToken(auth_token)
         return ValidationErrors(errors)
 
 
@@ -159,8 +170,7 @@ class CreateUser(graphene.Mutation):
             valid = False
 
         if valid:
-            hashed_password = jwt.encode({'password': password}, 'myTestKey!noiceone')
-
+            hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
             user = Siteuser(username=username, email=email, password=hashed_password)
             user.save()
             return user

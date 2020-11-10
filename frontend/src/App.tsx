@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Container } from '@material-ui/core';
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
-
 import theme from './theme';
 import Header from './components/Header';
 import Footer from './components/Footer';
