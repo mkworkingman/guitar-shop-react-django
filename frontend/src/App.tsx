@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import InfoText from "./pages/InfoText";
 import Category from './pages/Category';
 
+import { gql, useQuery } from '@apollo/client';
+
 const useStyles = makeStyles({
   root: {
     minHeight: '100vh',
@@ -21,6 +23,16 @@ const useStyles = makeStyles({
 
 const App: React.FC = () => {
   const classes = useStyles();
+
+  const CURRENT_USER = gql`{
+    currentUser {
+      id,
+      username,
+      email
+    }
+  }`;
+
+  useQuery(CURRENT_USER);
 
   return (
     <BrowserRouter>

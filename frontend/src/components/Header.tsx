@@ -85,19 +85,9 @@ const Header: React.FC = () => {
     }
   });
 
-  const CURRENT_USER = gql`{
-    currentUser {
-      id,
-      username,
-      email
-    }
-  }`;
-
-  const { loading: currentUserLoading, data: currentUserData } = useQuery(CURRENT_USER);
-
   const client = useApolloClient();
-
-  console.log(client.readQuery({
+  console.log(client.cache)
+  const currentUser = (client.readQuery({
     query: gql`{
       currentUser {
         id,
@@ -106,6 +96,7 @@ const Header: React.FC = () => {
       }
     }`
   }));
+  console.log(currentUser);
 
   const LOGIN_USER = gql`
     mutation loginUser($login: String!, $password: String!){
@@ -164,7 +155,14 @@ const Header: React.FC = () => {
         variables: { 
           login: login.login,
           password: login.password
-        }
+        },
+        refetchQueries: [{ query: gql`{
+          currentUser {
+            id,
+            username,
+            email
+          }
+        }`}]
       });
     } else {
       registered({ 
@@ -206,8 +204,7 @@ const Header: React.FC = () => {
           if (err) {
             console.log(err);
           } else {
-            // console.log(decoded);
-            localStorage.setItem('auth_token', data.loginUser.token)
+            localStorage.setItem('auth_token', data.loginUser.token);
           }
         });
       }
@@ -272,8 +269,18 @@ const Header: React.FC = () => {
   
   const navbarButtons: JSX.Element = (
     <div className={classes.view}>
+      <span>
+        {currentUser ?
+          currentUser.currentUser ?
+            currentUser.currentUser[0].username :
+            'No User' :
+          'Loading...'
+        }
+      </span>
+
       <Button color="inherit" name="login" onClick={handleOpenDialoge}>Login</Button>
       <Button color="inherit" name="register" onClick={handleOpenDialoge}>Register</Button>
+      {/* <Button color="inherit" name="logout" onClick={() => client.resetStore()}>Logout</Button> */}
       <IconButton color="inherit" name="cart" onClick={handleOpenDialoge}>
         <Badge badgeContent={4} color="secondary">
           <ShoppingCartIcon />
