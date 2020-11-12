@@ -29,6 +29,7 @@ class Query(graphene.ObjectType):
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
     instrument_list_type = graphene.List(InstrumentType, inst=graphene.String())
+    current_user = graphene.List(SiteuserType)
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
@@ -40,6 +41,12 @@ class Query(graphene.ObjectType):
     def resolve_instrument_list_type(self, info, inst):
         instrument_queryset = Instrument.objects.filter(inst_type=inst)
         return instrument_queryset
+
+    def resolve_current_user(self, info): 
+        if info.context.META.get('HTTP_AUTHORIZATION'):
+            auth_header = info.context.META.get('HTTP_AUTHORIZATION')
+            decoded_header = jwt.decode(auth_header[7:], 'myTestKey!noiceone')
+            return Siteuser.objects.filter(id=decoded_header['id'], username=decoded_header['username'], email=decoded_header['email'])
 
 class LoginUser(graphene.Mutation):
     token = graphene.String()
@@ -81,7 +88,7 @@ class LoginUser(graphene.Mutation):
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=60)
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=777777)
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
         return ValidationErrors(errors)

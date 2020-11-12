@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Typography,  Box, Card, CardMedia, Button, CircularProgress  } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
-
 import { useQuery, gql } from '@apollo/client';
 
 const useStyles = makeStyles({

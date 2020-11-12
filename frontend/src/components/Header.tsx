@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
 import jwt from "jsonwebtoken";
-import { gql, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
 
 const useStyles = makeStyles({
   mobileView: {
@@ -84,6 +84,28 @@ const Header: React.FC = () => {
       password2: null,
     }
   });
+
+  const CURRENT_USER = gql`{
+    currentUser {
+      id,
+      username,
+      email
+    }
+  }`;
+
+  const { loading: currentUserLoading, data: currentUserData } = useQuery(CURRENT_USER);
+
+  const client = useApolloClient();
+
+  console.log(client.readQuery({
+    query: gql`{
+      currentUser {
+        id,
+        username,
+        email
+      }
+    }`
+  }));
 
   const LOGIN_USER = gql`
     mutation loginUser($login: String!, $password: String!){
@@ -184,8 +206,8 @@ const Header: React.FC = () => {
           if (err) {
             console.log(err);
           } else {
-            console.log(decoded);
-            localStorage.setItem('auth_token', 'Bearer ' + data.loginUser.token)
+            // console.log(decoded);
+            localStorage.setItem('auth_token', data.loginUser.token)
           }
         });
       }
