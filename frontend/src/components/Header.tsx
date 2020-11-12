@@ -85,17 +85,19 @@ const Header: React.FC = () => {
     }
   });
 
+  const CURRENT_USER = gql`{
+    currentUser {
+      id,
+      username,
+      email
+    }
+  }`;
+
   const client = useApolloClient();
-  console.log(client.cache)
-  const currentUser = (client.readQuery({
-    query: gql`{
-      currentUser {
-        id,
-        username,
-        email
-      }
-    }`
-  }));
+  console.log(client.cache);
+  const currentUser = client.readQuery({
+    query: CURRENT_USER
+  });
   console.log(currentUser);
 
   const LOGIN_USER = gql`
@@ -156,13 +158,9 @@ const Header: React.FC = () => {
           login: login.login,
           password: login.password
         },
-        refetchQueries: [{ query: gql`{
-          currentUser {
-            id,
-            username,
-            email
-          }
-        }`}]
+        update: (cache, { data }) => {
+          console.log(data);
+        }
       });
     } else {
       registered({ 
