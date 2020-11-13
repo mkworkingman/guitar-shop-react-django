@@ -29,7 +29,7 @@ class Query(graphene.ObjectType):
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
     instrument_list_type = graphene.List(InstrumentType, inst=graphene.String())
-    current_user = graphene.List(SiteuserType)
+    current_user = graphene.List(SiteuserType, token=graphene.String())
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()

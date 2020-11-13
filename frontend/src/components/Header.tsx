@@ -97,8 +97,6 @@ const Header: React.FC = () => {
   const currentUser = client.readQuery({
     query: CURRENT_USER
   });
-  
-  console.log(currentUser);
 
   const LOGIN_USER = gql`
     mutation loginUser($login: String!, $password: String!){
@@ -157,6 +155,23 @@ const Header: React.FC = () => {
         variables: { 
           login: login.login,
           password: login.password
+        },
+        update: (cache, {data}) => {
+          if (data.loginUser.token) {
+            console.log(data.loginUser.token)
+            console.log(currentUser.currentUser[0]);
+
+            jwt.verify(data.loginUser.token, "myTestKey!noiceone", (err: any, decoded: any) => {
+              if (err) {
+                console.log(err);
+              } else {
+                cache.writeQuery({
+                  query: CURRENT_USER,
+                  data: {currentUser: [{...currentUser.currentUser[0], id: decoded.id, username: decoded.username, email: decoded.email}]}
+                })
+              }
+            });
+          }
         }
       });
     } else {
@@ -195,7 +210,7 @@ const Header: React.FC = () => {
           }
         });
 
-        jwt.verify(data.loginUser.token, "myTestKey!noiceone", (err: any, decoded: any) => {
+        jwt.verify(data.loginUser.token, "myTestKey!noiceone", (err: any) => {
           if (err) {
             console.log(err);
           } else {
