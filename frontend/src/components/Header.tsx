@@ -94,10 +94,10 @@ const Header: React.FC = () => {
   }`;
 
   const client = useApolloClient();
-  console.log(client.cache);
   const currentUser = client.readQuery({
     query: CURRENT_USER
   });
+  
   console.log(currentUser);
 
   const LOGIN_USER = gql`
@@ -157,9 +157,6 @@ const Header: React.FC = () => {
         variables: { 
           login: login.login,
           password: login.password
-        },
-        update: (cache, { data }) => {
-          console.log(data);
         }
       });
     } else {
