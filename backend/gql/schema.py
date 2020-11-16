@@ -42,12 +42,11 @@ class Query(graphene.ObjectType):
         instrument_queryset = Instrument.objects.filter(inst_type=inst)
         return instrument_queryset
 
-    def resolve_current_user(self, info): 
+    def resolve_current_user(self, info):
         if info.context.META.get('HTTP_AUTHORIZATION'):
             auth_header = info.context.META.get('HTTP_AUTHORIZATION')
             decoded_header = jwt.decode(auth_header[7:], 'myTestKey!noiceone')
             return Siteuser.objects.filter(id=decoded_header['id'], username=decoded_header['username'], email=decoded_header['email'])
-
 class LoginUser(graphene.Mutation):
     token = graphene.String()
     errors = GenericScalar()

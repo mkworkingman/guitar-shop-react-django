@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, Box, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core';
+import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, Box, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress } from '@material-ui/core';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
 import jwt from "jsonwebtoken";
-import { gql, useQuery, useMutation, useApolloClient } from '@apollo/client';
+import { gql, useMutation, useApolloClient } from '@apollo/client';
 
 const useStyles = makeStyles({
   mobileView: {
@@ -18,7 +18,8 @@ const useStyles = makeStyles({
   view: {
     display: 'none',
     [theme.breakpoints.up('sm')]: {
-      display: 'block'
+      display: 'flex',
+      alignItems: 'center'
     }
   },
   appbar: {
@@ -98,6 +99,10 @@ const Header: React.FC = () => {
     query: CURRENT_USER
   });
 
+  useEffect(() => {
+    setOpenDialoge(false);
+  }, [currentUser])
+
   const LOGIN_USER = gql`
     mutation loginUser($login: String!, $password: String!){
       loginUser(login: $login, password: $password){
@@ -131,10 +136,6 @@ const Header: React.FC = () => {
     setOpenDialoge(e.currentTarget.name);
   };
 
-  const handleCloseDialoge = () => {
-    setOpenDialoge(false);
-  };
-
   const handleLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setLogin({
       ...login,
@@ -147,7 +148,7 @@ const Header: React.FC = () => {
       ...register,
       [e.currentTarget.name]: e.currentTarget.value
     })
-  }
+  };
 
   const tryAuth = () => {
     if (openDialoge === 'login') {
@@ -158,17 +159,14 @@ const Header: React.FC = () => {
         },
         update: (cache, {data}) => {
           if (data.loginUser.token) {
-            console.log(data.loginUser.token)
-            console.log(currentUser.currentUser[0]);
-
             jwt.verify(data.loginUser.token, "myTestKey!noiceone", (err: any, decoded: any) => {
               if (err) {
                 console.log(err);
               } else {
                 cache.writeQuery({
                   query: CURRENT_USER,
-                  data: {currentUser: [{...currentUser.currentUser[0], id: decoded.id, username: decoded.username, email: decoded.email}]}
-                })
+                  data: {currentUser: [{id: decoded.id, username: decoded.username, email: decoded.email}]}
+                });
               }
             });
           }
@@ -184,6 +182,14 @@ const Header: React.FC = () => {
         }
       });
     }
+  }
+
+  const logout = () => {
+    localStorage.removeItem('auth_token');
+    client.writeQuery({
+      query: CURRENT_USER,
+      data: {currentUser: null}
+    });
   }
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -261,12 +267,8 @@ const Header: React.FC = () => {
         keepMounted
       >
         <div>
-          <MenuItem key="login" onClick={handleClose}>
-            Login
-          </MenuItem>
-          <MenuItem key="register" onClick={handleClose}>
-            Register
-          </MenuItem>
+          <MenuItem key="login" onClick={handleClose}>Login</MenuItem>
+          <MenuItem key="register" onClick={handleClose}>Register</MenuItem>
           <MenuItem key="cart" onClick={handleClose}>
             <Badge badgeContent={4} color="secondary">
               <ShoppingCartIcon />
@@ -279,20 +281,21 @@ const Header: React.FC = () => {
   
   const navbarButtons: JSX.Element = (
     <div className={classes.view}>
-      <span>
-        {currentUser ?
-          currentUser.currentUser ?
-            currentUser.currentUser[0].username :
-            'No User' :
-          'Loading...'
-        }
-      </span>
+      {currentUser ?
+        currentUser.currentUser ?
+          <>
+            <Typography>Hello, {currentUser.currentUser[0].username}!</Typography>
+            <Button color="inherit" name="login" onClick={logout}>Logout</Button>
+          </> :
+          <>
+            <Button color="inherit" name="login" onClick={handleOpenDialoge}>Login</Button>
+            <Button color="inherit" name="register" onClick={handleOpenDialoge}>Register</Button>
+          </> :
+        <CircularProgress color="secondary" />
+      }
 
-      <Button color="inherit" name="login" onClick={handleOpenDialoge}>Login</Button>
-      <Button color="inherit" name="register" onClick={handleOpenDialoge}>Register</Button>
-      {/* <Button color="inherit" name="logout" onClick={() => client.resetStore()}>Logout</Button> */}
       <IconButton color="inherit" name="cart" onClick={handleOpenDialoge}>
-        <Badge badgeContent={4} color="secondary">
+        <Badge badgeContent={currentUser && 4} color="secondary">
           <ShoppingCartIcon />
         </Badge>
       </IconButton>
@@ -312,7 +315,7 @@ const Header: React.FC = () => {
         {navbarButtons}
       </Toolbar>
 
-      <Dialog open={openDialoge === 'login'} onClose={handleCloseDialoge} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
+      <Dialog open={openDialoge === 'login'} onClose={() => setOpenDialoge(false)} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
         <Box
           display={loading || registerLoading ? "block" : "none"}
           width="100%"
@@ -360,13 +363,13 @@ const Header: React.FC = () => {
           <Button onClick={tryAuth} color="primary" disabled={loading}>
             Log In
           </Button>
-          <Button onClick={handleCloseDialoge} color="primary" disabled={loading}>
+          <Button onClick={() => setOpenDialoge(false)} color="primary" disabled={loading}>
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openDialoge === 'register'} onClose={handleCloseDialoge} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
+      <Dialog open={openDialoge === 'register'} onClose={() => setOpenDialoge(false)} fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
         <Box
           display={loading || registerLoading ? "block" : "none"}
           width="100%"
@@ -442,13 +445,13 @@ const Header: React.FC = () => {
           <Button onClick={tryAuth} color="primary" disabled={registerLoading}>
             Register
           </Button>
-          <Button onClick={handleCloseDialoge} color="primary" disabled={registerLoading}>
+          <Button onClick={() => setOpenDialoge(false)} color="primary" disabled={registerLoading}>
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openDialoge === 'cart'} onClose={handleCloseDialoge} aria-labelledby="form-dialog-title">
+      <Dialog open={openDialoge === 'cart'} onClose={() => setOpenDialoge(false)} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
         <DialogContent>
           <TextField
@@ -461,10 +464,10 @@ const Header: React.FC = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialoge} color="primary">
+          <Button onClick={() => setOpenDialoge(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleCloseDialoge} color="primary">
+          <Button onClick={() => setOpenDialoge(false)} color="primary">
             Subscribe
           </Button>
         </DialogActions>
