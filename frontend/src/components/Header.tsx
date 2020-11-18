@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { Link } from "react-router-dom";
 import jwt from "jsonwebtoken";
-import { gql, useMutation, useApolloClient } from '@apollo/client';
+import { gql, useMutation, useApolloClient, useQuery } from '@apollo/client';
 
 const useStyles = makeStyles({
   mobileView: {
@@ -86,6 +86,8 @@ const Header: React.FC = () => {
     }
   });
 
+  const client = useApolloClient();
+
   const CURRENT_USER = gql`{
     currentUser {
       id,
@@ -94,10 +96,7 @@ const Header: React.FC = () => {
     }
   }`;
 
-  const client = useApolloClient();
-  const currentUser = client.readQuery({
-    query: CURRENT_USER
-  });
+  const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
 
   useEffect(() => {
     setOpenDialoge(false);

@@ -67,7 +67,7 @@ const Discount: React.FC = () => {
       }
     }
   `;
-  const { loading, error, data } = useQuery(DISC);
+  const { loading, data } = useQuery(DISC);
 
   const [discountItems, setDiscountItems] = useState<any[]>([]);
 
@@ -96,6 +96,24 @@ const Discount: React.FC = () => {
         
     }
   }, [loading, data]);
+
+  const CURRENT_USER = gql`{
+    currentUser {
+      id,
+      username,
+      email,
+      added
+    }
+  }`;
+
+  const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
+
+  console.log(currentUser);
+  console.log(discountItems);
+  if (currentUser && currentUser.currentUser) console.log(currentUser.currentUser.added)
+  if (currentUser && currentUser.currentUser) console.log(typeof currentUser.currentUser.added)
+  
+  
 
   return (
     <div>
