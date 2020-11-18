@@ -29,7 +29,7 @@ class Query(graphene.ObjectType):
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
     instrument_list_type = graphene.List(InstrumentType, inst=graphene.String())
-    current_user = graphene.List(SiteuserType, token=graphene.String())
+    current_user = graphene.Field(SiteuserType, token=graphene.String())
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
@@ -46,7 +46,8 @@ class Query(graphene.ObjectType):
         if info.context.META.get('HTTP_AUTHORIZATION'):
             auth_header = info.context.META.get('HTTP_AUTHORIZATION')
             decoded_header = jwt.decode(auth_header[7:], 'myTestKey!noiceone')
-            return Siteuser.objects.filter(id=decoded_header['id'], username=decoded_header['username'], email=decoded_header['email'])
+            return Siteuser.objects.get(id=decoded_header['id'], username=decoded_header['username'], email=decoded_header['email'])
+
 class LoginUser(graphene.Mutation):
     token = graphene.String()
     errors = GenericScalar()
@@ -82,11 +83,12 @@ class LoginUser(graphene.Mutation):
             valid = False
 
         if valid:
-            user = Siteuser.objects.filter(**{login_type: login})[0]
+            user = Siteuser.objects.get(**{login_type: login})
             auth_token = jwt.encode({
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
+                'added': user.added,
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=777777)
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)

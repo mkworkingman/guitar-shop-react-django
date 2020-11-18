@@ -19,6 +19,7 @@ class Siteuser(models.Model):
     username = models.CharField(max_length=22)
     email = models.EmailField(max_length=250)
     password = models.CharField(max_length=250)
+    added = models.TextField(default='{}', null=True)
 
     def __str__(self):
         return self.username

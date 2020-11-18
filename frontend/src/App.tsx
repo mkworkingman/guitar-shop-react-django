@@ -28,7 +28,8 @@ const App: React.FC = () => {
     currentUser {
       id,
       username,
-      email
+      email,
+      added
     }
   }`;
 

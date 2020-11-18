@@ -92,11 +92,14 @@ const Header: React.FC = () => {
     currentUser {
       id,
       username,
-      email
+      email,
+      added
     }
   }`;
 
   const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
+
+  console.log(currentUser);
 
   useEffect(() => {
     setOpenDialoge(false);
@@ -164,7 +167,7 @@ const Header: React.FC = () => {
               } else {
                 cache.writeQuery({
                   query: CURRENT_USER,
-                  data: {currentUser: [{id: decoded.id, username: decoded.username, email: decoded.email}]}
+                  data: {currentUser: {id: decoded.id, username: decoded.username, email: decoded.email, added: decoded.added}}
                 });
               }
             });
@@ -280,10 +283,10 @@ const Header: React.FC = () => {
   
   const navbarButtons: JSX.Element = (
     <div className={classes.view}>
-      {currentUser ?
+      {!loadingCurrentUser ?
         currentUser.currentUser ?
           <>
-            <Typography>Hello, {currentUser.currentUser[0].username}!</Typography>
+            <Typography>Hello, {currentUser.currentUser.username}!</Typography>
             <Button color="inherit" name="login" onClick={logout}>Logout</Button>
           </> :
           <>
