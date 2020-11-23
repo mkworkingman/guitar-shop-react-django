@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Typography,  Box, Card, CardMedia, Button, CircularProgress  } from '@material-ui/core';
+import { Typography,  Box, Card, CardMedia, Button, ButtonGroup, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql, useMutation } from '@apollo/client';
 
 const useStyles = makeStyles({
   item: {
@@ -69,47 +69,47 @@ const Discount: React.FC = () => {
   `;
   const { loading, data } = useQuery(DISC);
 
-  const [discountItems, setDiscountItems] = useState<any[]>([]);
+  const CURRENT_USER = gql`{
+    currentUser {
+      id,
+      username,
+      email,
+      added
+    }
+  }`;
+
+  const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
+
+  const CHANGE_ADDED = gql`
+    mutation changeAdded($itemId: String!, $increment: Boolean!){
+      changeAdded(itemId: $itemId, increment: $increment){
+        token
+      }
+    }
+  `;
+
+  const [changeAdded, {loading: loadingChangedAdded, data: changedAdded}] = useMutation(CHANGE_ADDED);
 
   useEffect(() => {
-    if (!loading && data) {
-      let n = 4;
-      const { disc } = data;
-
-      const result = [];
-      let len = disc.length;
-      const taken = new Array(len);
-
-      if (n >= len) {
-        setDiscountItems(disc);
-      } else {
-        while (n--) {
-          let x = Math.floor(Math.random() * len);
-          const test = disc[x in taken ? taken[x] : x];
-  
-          result[n] = test;
-          taken[x] = --len in taken ? taken[len] : len;
-        }
-  
-        setDiscountItems(result);
-      }
-        
+    if (changedAdded) {
+      localStorage.setItem('auth_token', changedAdded.changeAdded.token);
     }
-  }, [loading, data]);
+  }, [changedAdded])
 
-  // const CURRENT_USER = gql`{
-  //   currentUser {
-  //     id,
-  //     username,
-  //     email,
-  //     added
-  //   }
-  // }`;
-
-  // const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
-
-  // console.log(currentUser);
-  console.log(discountItems);
+  const changeItem = (id: string, increment: boolean) => {
+    changeAdded({
+      variables: {
+        itemId: id,
+        increment
+      },
+      update: (cache, {data}) => {
+        cache.writeQuery({
+          query: CURRENT_USER,
+          data: {currentUser: {added: data}}
+        });
+      }
+    })
+  };
 
   return (
     <div>
@@ -120,7 +120,7 @@ const Discount: React.FC = () => {
       <Box display="flex" justifyContent='center' margin={theme.spacing(1.4, 0)}>
 
         { loading ? <CircularProgress /> :
-          discountItems.map(item =>
+          data.disc.slice(0, 4).map((item: any) =>
             <Card className={classes.item} elevation={3} key={item.id}>
               <CardMedia
                 className={classes.img}
@@ -140,9 +140,20 @@ const Discount: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Button variant="contained" color="primary" size="small">
-                To Card
-              </Button>
+              {currentUser && currentUser.currentUser 
+                ? JSON.parse(currentUser.currentUser.added)[item.id]
+                  ? <ButtonGroup color="primary" variant="contained" size="small">
+                    <Button onClick={() => changeItem(item.id, false)} disabled={loadingChangedAdded}>-</Button>
+                    <Button disabled={loadingChangedAdded}>{JSON.parse(currentUser.currentUser.added)[item.id]}</Button>
+                    <Button onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>+</Button>
+                  </ButtonGroup>
+                  : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
+                    To Card
+                  </Button>
+                : <Button variant="contained" color="primary" size="small" onClick={() => console.log("!!!")}>
+                  To Card
+                </Button>
+              }
             </Card>
           )
         }

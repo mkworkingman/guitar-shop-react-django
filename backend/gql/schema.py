@@ -6,6 +6,7 @@ import re
 import bcrypt
 import jwt
 import datetime
+import json
 
 class AuthToken:
     def __init__(self, token):
@@ -184,8 +185,50 @@ class CreateUser(graphene.Mutation):
             return user
         return ValidationErrors(errors)
 
+class ChangeAdded(graphene.Mutation):
+    token = graphene.String()
+
+    class Arguments:
+        item_id = graphene.String()
+        increment = graphene.Boolean()
+    
+    def mutate(self, info, item_id, increment):
+        if info.context.META.get('HTTP_AUTHORIZATION'):
+            auth_header = info.context.META.get('HTTP_AUTHORIZATION')
+            decoded_header = jwt.decode(auth_header[7:], 'myTestKey!noiceone')
+            user = Siteuser.objects.get(id=decoded_header['id'], username=decoded_header['username'], email=decoded_header['email'])
+            print(user.added)
+            added = json.loads(user.added)
+
+            if increment:
+                if item_id in added:
+                    added[item_id] += 1
+                else:
+                    added[item_id] = 1
+            else:
+                if added[item_id] == 1:
+                    del added[item_id]
+                else:
+                    added[item_id] -= 1
+
+            print(added)
+
+            added_json = json.dumps(added)
+            print(added_json)
+            user.added = added_json
+            user.save()
+            auth_token = jwt.encode({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'added': added_json,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=777777)
+            }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
+            return AuthToken(auth_token)
+
 class Mutation(graphene.ObjectType):
     login_user = LoginUser.Field()
     create_user = CreateUser.Field()
+    change_added = ChangeAdded.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -99,8 +99,6 @@ const Header: React.FC = () => {
 
   const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
 
-  console.log(currentUser);
-
   useEffect(() => {
     setOpenDialoge(false);
   }, [currentUser])
