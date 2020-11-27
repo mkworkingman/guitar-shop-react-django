@@ -78,7 +78,7 @@ const Discount: React.FC = () => {
     }
   }`;
 
-  const { loading: loadingCurrentUser, data: currentUser } = useQuery(CURRENT_USER);
+  const { data: currentUser } = useQuery(CURRENT_USER);
 
   const CHANGE_ADDED = gql`
     mutation changeAdded($itemId: String!, $increment: Boolean!){
@@ -94,7 +94,7 @@ const Discount: React.FC = () => {
     if (changedAdded) {
       localStorage.setItem('auth_token', changedAdded.changeAdded.token);
     }
-  }, [changedAdded])
+  }, [changedAdded]);
 
   const changeItem = (id: string, increment: boolean) => {
     changeAdded({
@@ -140,7 +140,7 @@ const Discount: React.FC = () => {
                 </Typography>
               </Box>
 
-              {currentUser && currentUser.currentUser 
+              {currentUser && currentUser.currentUser
                 ? JSON.parse(currentUser.currentUser.added)[item.id]
                   ? <ButtonGroup color="primary" variant="contained" size="small">
                     <Button onClick={() => changeItem(item.id, false)} disabled={loadingChangedAdded}>-</Button>

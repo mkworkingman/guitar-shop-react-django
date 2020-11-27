@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Redirect } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
-import { Paper, Accordion, AccordionSummary, AccordionDetails, Typography, Checkbox, FormControlLabel, Slider, Card, CardMedia, Box, Button } from '@material-ui/core';
+import { Paper, Accordion, AccordionSummary, AccordionDetails, Typography, Checkbox, FormControlLabel, Slider, Card, CardMedia, Box, Button, ButtonGroup } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import theme from '../theme';
 
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, gql, useMutation } from '@apollo/client';
 
 const useStyles = makeStyles({
   category: {
@@ -231,6 +231,48 @@ const Category: React.FC = () => {
 
   }, [category]);
 
+  const CURRENT_USER = gql`{
+    currentUser {
+      id,
+      username,
+      email,
+      added
+    }
+  }`;
+
+  const { data: currentUser } = useQuery(CURRENT_USER);
+
+  const CHANGE_ADDED = gql`
+    mutation changeAdded($itemId: String!, $increment: Boolean!){
+      changeAdded(itemId: $itemId, increment: $increment){
+        token
+      }
+    }
+  `;
+
+  const [changeAdded, {loading: loadingChangedAdded, data: changedAdded}] = useMutation(CHANGE_ADDED);
+
+  useEffect(() => {
+    if (changedAdded) {
+      localStorage.setItem('auth_token', changedAdded.changeAdded.token);
+    }
+  }, [changedAdded]);
+
+  const changeItem = (id: string, increment: boolean) => {
+    changeAdded({
+      variables: {
+        itemId: id,
+        increment
+      },
+      update: (cache, {data}) => {
+        cache.writeQuery({
+          query: CURRENT_USER,
+          data: {currentUser: {added: data}}
+        });
+      }
+    })
+  };
+
   if (name === 'classic' ||
       name === 'acoustic' ||
       name === 'electric' ||
@@ -346,8 +388,8 @@ const Category: React.FC = () => {
 
         <div className={classes.items}>
           {
-            filteredInstruments.map((item, i) =>
-              <Card className={classes.product} elevation={3} key={i}>
+            filteredInstruments.map(item =>
+              <Card className={classes.product} elevation={3} key={item.id}>
                 <CardMedia
                   className={classes.img}
                   image={''}
@@ -367,9 +409,24 @@ const Category: React.FC = () => {
                   </Typography>
                 </Box>
 
-                <Button variant="contained" color="primary" size="small">
+                {/* <Button variant="contained" color="primary" size="small">
                   To Card
-                </Button>
+                </Button> */}
+
+                {currentUser && currentUser.currentUser
+                  ? JSON.parse(currentUser.currentUser.added)[item.id]
+                    ? <ButtonGroup color="primary" variant="contained" size="small">
+                      <Button onClick={() => changeItem(item.id, false)} disabled={loadingChangedAdded}>-</Button>
+                      <Button disabled={loadingChangedAdded}>{JSON.parse(currentUser.currentUser.added)[item.id]}</Button>
+                      <Button onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>+</Button>
+                    </ButtonGroup>
+                    : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
+                      To Card
+                    </Button>
+                  : <Button variant="contained" color="primary" size="small" onClick={() => console.log("!!!")}>
+                    To Card
+                  </Button>
+                }
 
               </Card>
             )

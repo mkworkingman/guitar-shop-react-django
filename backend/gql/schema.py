@@ -90,7 +90,6 @@ class LoginUser(graphene.Mutation):
                 'username': user.username,
                 'email': user.email,
                 'added': user.added,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=777777)
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
         return ValidationErrors(errors)
@@ -222,7 +221,6 @@ class ChangeAdded(graphene.Mutation):
                 'username': user.username,
                 'email': user.email,
                 'added': added_json,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=777777)
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
 
