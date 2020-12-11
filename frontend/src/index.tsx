@@ -6,6 +6,20 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import jwt from "jsonwebtoken";
 import { gql } from '@apollo/client';
+import { makeVar } from '@apollo/client';
+
+let unauthAddedDecoded;
+
+jwt.verify(localStorage.getItem('unauth_added') as string, "myTestKey!noiceone", (err: any, decoded: any) => {
+  if (err) {
+    unauthAddedDecoded = {};
+  } else {
+    delete decoded.iat
+    unauthAddedDecoded = decoded;
+  }
+});
+
+const unauthAddedVar = makeVar(unauthAddedDecoded);
 
 const CURRENT_USER = gql`{
   currentUser {
@@ -30,7 +44,19 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const client = new ApolloClient({
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          unauthAdded: {
+            read() {
+              return unauthAddedVar();
+            }
+          }
+        }
+      }
+    }
+  }),
   link: authLink.concat(link),
   connectToDevTools: true
 });
@@ -54,7 +80,6 @@ window.addEventListener('storage', e => {
         data: {currentUser: null}
       });
     }
-
   }
 });
 
@@ -71,3 +96,5 @@ ReactDOM.render(
 serviceWorker.unregister();
 
 // graphiql.graphcms.com/simple/v1/swapi
+
+export default unauthAddedVar;

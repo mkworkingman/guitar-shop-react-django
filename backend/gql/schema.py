@@ -30,7 +30,7 @@ class Query(graphene.ObjectType):
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
     instrument_list_type = graphene.List(InstrumentType, inst=graphene.String())
-    current_user = graphene.Field(SiteuserType, token=graphene.String())
+    current_user = graphene.Field(SiteuserType)
 
     def resolve_instrument_list(self, info):
         return Instrument.objects.all()
@@ -210,10 +210,7 @@ class ChangeAdded(graphene.Mutation):
                 else:
                     added[item_id] -= 1
 
-            print(added)
-
             added_json = json.dumps(added)
-            print(added_json)
             user.added = added_json
             user.save()
             auth_token = jwt.encode({

@@ -3,6 +3,8 @@ import { Typography,  Box, Card, CardMedia, Button, ButtonGroup, CircularProgres
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { useQuery, gql, useMutation } from '@apollo/client';
+import jwt from "jsonwebtoken";
+import unauthAddedVar from '../index';
 
 const useStyles = makeStyles({
   item: {
@@ -111,6 +113,39 @@ const Discount: React.FC = () => {
     })
   };
 
+  const IS_LOGGED_IN = gql`
+    query unauthAdded {
+      unauthAdded @client
+    }
+  `;
+
+  const {data: {unauthAdded}} = useQuery<any>(IS_LOGGED_IN);
+
+  const changeItemUnauth = (id: string, increment: boolean) => {
+    if (increment) {
+      if (unauthAdded.hasOwnProperty(id)) {
+        unauthAddedVar({...unauthAdded, [id]: unauthAdded[id] + 1});
+      } else {
+        unauthAddedVar({...unauthAdded, [id]: 1});
+      }
+    } else {
+      if (unauthAdded[id] === 1) {
+        const { [id]: remove, ...newUnauthAdded } = unauthAdded;
+        unauthAddedVar(newUnauthAdded);
+      } else {
+        unauthAddedVar({...unauthAdded, [id]: unauthAdded[id] - 1});
+      }
+    }
+  };
+
+  useEffect(() => {
+    localStorage.setItem('unauth_added', jwt.sign(unauthAdded, 'myTestKey!noiceone'));
+  }, [unauthAdded]);
+
+  // useEffect(() => {
+  //   localStorage.setItem('unauth_added', jwt.sign(addedUnauth, 'myTestKey!noiceone'));
+  // }, [addedUnauth]);
+
   return (
     <div>
       <Typography variant="h5">
@@ -150,9 +185,15 @@ const Discount: React.FC = () => {
                   : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
                     To Card
                   </Button>
-                : <Button variant="contained" color="primary" size="small" onClick={() => console.log("!!!")}>
-                  To Card
-                </Button>
+                : unauthAdded[item.id]
+                  ? <ButtonGroup color="primary" variant="contained" size="small">
+                    <Button onClick={() => changeItemUnauth(item.id, false)} disabled={loadingChangedAdded}>-</Button>
+                    <Button disabled={loadingChangedAdded}>{unauthAdded[item.id]}</Button>
+                    <Button onClick={() => changeItemUnauth(item.id, true)} disabled={loadingChangedAdded}>+</Button>
+                  </ButtonGroup>
+                  : <Button variant="contained" color="primary" size="small" onClick={() => changeItemUnauth(item.id, true)}>
+                    To Card
+                  </Button>
               }
             </Card>
           )

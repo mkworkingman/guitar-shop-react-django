@@ -3,6 +3,15 @@ import { createMuiTheme } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 
 export default createMuiTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 737,
+      lg: 1280,
+      xl: 1920
+    }
+  },
   palette: {
     primary: {
       main: '#437fc7',

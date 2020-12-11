@@ -4,17 +4,39 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Paper, Accordion, AccordionSummary, AccordionDetails, Typography, Checkbox, FormControlLabel, Slider, Card, CardMedia, Box, Button, ButtonGroup } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import theme from '../theme';
+import unauthAddedVar from '../index';
 
 import { useQuery, gql, useMutation } from '@apollo/client';
 
 const useStyles = makeStyles({
   category: {
     display: 'flex',
-    padding: theme.spacing(1, 2)
+    padding: theme.spacing(1, 2),
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column'
+    }
   },
   properties: {
     flex: '0 0 192px',
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
+    height: 'fit-content',
+    position: 'sticky',
+    top: 88,
+    [theme.breakpoints.down('sm')]: {
+      display: 'none'
+    }
+  },
+  propertiesMobile: {
+    position: 'sticky',
+    top: 64,
+    zIndex: 100,
+    marginBottom: 10,
+    [theme.breakpoints.up('md')]: {
+      display: 'none'
+    },
+    [theme.breakpoints.down('xs')]: {
+      top: 56
+    }
   },
   details: {
     flexDirection: 'column'
@@ -28,7 +50,7 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 210px))',
-    gridAutoRows: '250px',
+    gridAutoRows: 250,
     gridGap: theme.spacing(1.5)
   },
   product: {
@@ -40,7 +62,7 @@ const useStyles = makeStyles({
     alignItems: 'center'
   },
   img: {
-    maxWidth: '200px',
+    maxWidth: 200,
     height: 'auto',
     width: '100%',
     flexShrink: 0
@@ -273,6 +295,134 @@ const Category: React.FC = () => {
     })
   };
 
+  const IS_LOGGED_IN = gql`
+    query unauthAdded {
+      unauthAdded @client
+    }
+  `;
+
+  const {data: {unauthAdded}} = useQuery<any>(IS_LOGGED_IN);
+
+  const changeItemUnauth = (id: string, increment: boolean) => {
+    if (increment) {
+      if (unauthAdded.hasOwnProperty(id)) {
+        unauthAddedVar({...unauthAdded, [id]: unauthAdded[id] + 1});
+      } else {
+        unauthAddedVar({...unauthAdded, [id]: 1});
+      }
+    } else {
+      if (unauthAdded[id] === 1) {
+        const { [id]: remove, ...newUnauthAdded } = unauthAdded;
+        unauthAddedVar(newUnauthAdded);
+      } else {
+        unauthAddedVar({...unauthAdded, [id]: unauthAdded[id] - 1});
+      }
+    }
+  };
+
+  const properties: JSX.Element = (
+    <>
+      <Accordion disabled={instruments.length === 0}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Strings</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={classes.details}>
+          {
+            Object.entries(category.strings).map(([key, value]) => 
+              <FormControlLabel
+                key={key}
+                value="end"
+                control={<Checkbox color="primary" onChange={checkboxChange} />}
+                label={key}
+                labelPlacement="end"
+                name={"strings_" + key}
+                checked={value}
+              />
+            )
+          }
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion disabled={instruments.length === 0}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Frets</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={classes.details}>
+          {
+            Object.entries(category.frets).map(([key, value]) => 
+              <FormControlLabel
+                key={key}
+                value="end"
+                control={<Checkbox color="primary" onChange={checkboxChange} />}
+                label={key}
+                labelPlacement="end"
+                name={"frets_" + key}
+                checked={value}
+              />
+            )
+          }
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion disabled={instruments.length === 0}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Brand</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={classes.details}>
+          {
+            Object.entries(category.brand).map(([key, value]) => 
+              <FormControlLabel
+                key={key}
+                value="end"
+                control={<Checkbox color="primary" onChange={checkboxChange} />}
+                label={key}
+                labelPlacement="end"
+                name={"brand_" + key}
+                checked={value}
+              />
+            )
+          }
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion disabled={instruments.length === 0}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>Orientation</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={classes.details}>
+          {
+            Object.entries(category.orientation).map(([key, value]) => 
+              <FormControlLabel
+                key={key}
+                value="end"
+                control={<Checkbox color="primary" onChange={checkboxChange} />}
+                label={key}
+                labelPlacement="end"
+                name={"orientation_" + key}
+                checked={value}
+              />
+            )
+          }
+        </AccordionDetails>
+      </Accordion>
+
+      <Paper className={classes.price}>
+        <Typography>Price:</Typography>
+        <Slider
+          value={category.price}
+          onChange={sliderChange}
+          valueLabelDisplay="auto"
+          min={0}
+          max={maxPrice}
+          step={10}
+          disabled={instruments.length === 0}
+        />
+        <Typography gutterBottom>Min: {Boolean(category.price[0]) ? category.price[0] : 0}$</Typography>
+        <Typography>Max: {isFinite(category.price[1]) ? category.price[1] : 0}$</Typography>
+      </Paper>
+    </>
+  )
+
   if (name === 'classic' ||
       name === 'acoustic' ||
       name === 'electric' ||
@@ -284,106 +434,20 @@ const Category: React.FC = () => {
   ) {
     return (
       <Paper className={classes.category}>
+
+        <div className={classes.propertiesMobile}>
+          <Accordion disabled={instruments.length === 0}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography>Properties</Typography>
+            </AccordionSummary>
+            <AccordionDetails style={{flexDirection: 'column'}}>
+              {properties}
+            </AccordionDetails>
+          </Accordion>
+        </div>
+
         <div className={classes.properties}>
-          <Accordion disabled={instruments.length === 0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Strings</Typography>
-            </AccordionSummary>
-            <AccordionDetails className={classes.details}>
-              {
-                Object.entries(category.strings).map(([key, value]) => 
-                  <FormControlLabel
-                    key={key}
-                    value="end"
-                    control={<Checkbox color="primary" onChange={checkboxChange} />}
-                    label={key}
-                    labelPlacement="end"
-                    name={"strings_" + key}
-                    checked={value}
-                  />
-                )
-              }
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion disabled={instruments.length === 0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Frets</Typography>
-            </AccordionSummary>
-            <AccordionDetails className={classes.details}>
-              {
-                Object.entries(category.frets).map(([key, value]) => 
-                  <FormControlLabel
-                    key={key}
-                    value="end"
-                    control={<Checkbox color="primary" onChange={checkboxChange} />}
-                    label={key}
-                    labelPlacement="end"
-                    name={"frets_" + key}
-                    checked={value}
-                  />
-                )
-              }
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion disabled={instruments.length === 0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Brand</Typography>
-            </AccordionSummary>
-            <AccordionDetails className={classes.details}>
-              {
-                Object.entries(category.brand).map(([key, value]) => 
-                  <FormControlLabel
-                    key={key}
-                    value="end"
-                    control={<Checkbox color="primary" onChange={checkboxChange} />}
-                    label={key}
-                    labelPlacement="end"
-                    name={"brand_" + key}
-                    checked={value}
-                  />
-                )
-              }
-            </AccordionDetails>
-          </Accordion>
-
-          <Accordion disabled={instruments.length === 0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography>Orientation</Typography>
-            </AccordionSummary>
-            <AccordionDetails className={classes.details}>
-              {
-                Object.entries(category.orientation).map(([key, value]) => 
-                  <FormControlLabel
-                    key={key}
-                    value="end"
-                    control={<Checkbox color="primary" onChange={checkboxChange} />}
-                    label={key}
-                    labelPlacement="end"
-                    name={"orientation_" + key}
-                    checked={value}
-                  />
-                )
-              }
-            </AccordionDetails>
-          </Accordion>
-
-          <Paper className={classes.price}>
-            <Typography>Price:</Typography>
-            <Slider
-              value={category.price}
-              onChange={sliderChange}
-              valueLabelDisplay="auto"
-              min={0}
-              max={maxPrice}
-              step={10}
-              disabled={instruments.length === 0}
-            />
-            <Typography gutterBottom>Min: {Boolean(category.price[0]) ? category.price[0] : 0}$</Typography>
-            <Typography>Max: {isFinite(category.price[1]) ? category.price[1] : 0}$</Typography>
-          </Paper>
-          
+          {properties}
         </div>
 
         <div className={classes.items}>
@@ -409,10 +473,6 @@ const Category: React.FC = () => {
                   </Typography>
                 </Box>
 
-                {/* <Button variant="contained" color="primary" size="small">
-                  To Card
-                </Button> */}
-
                 {currentUser && currentUser.currentUser
                   ? JSON.parse(currentUser.currentUser.added)[item.id]
                     ? <ButtonGroup color="primary" variant="contained" size="small">
@@ -423,9 +483,15 @@ const Category: React.FC = () => {
                     : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
                       To Card
                     </Button>
-                  : <Button variant="contained" color="primary" size="small" onClick={() => console.log("!!!")}>
-                    To Card
-                  </Button>
+                  : unauthAdded[item.id]
+                    ? <ButtonGroup color="primary" variant="contained" size="small">
+                      <Button onClick={() => changeItemUnauth(item.id, false)} disabled={loadingChangedAdded}>-</Button>
+                      <Button disabled={loadingChangedAdded}>{unauthAdded[item.id]}</Button>
+                      <Button onClick={() => changeItemUnauth(item.id, true)} disabled={loadingChangedAdded}>+</Button>
+                    </ButtonGroup>
+                    : <Button variant="contained" color="primary" size="small" onClick={() => changeItemUnauth(item.id, true)}>
+                      To Card
+                    </Button>
                 }
 
               </Card>

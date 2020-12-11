@@ -23,7 +23,8 @@ const useStyles = makeStyles({
     }
   },
   appbar: {
-    display: 'block'
+    display: 'block',
+    zIndex: 20
   },
   toolbar: {
     maxWidth: '950px',
@@ -88,6 +89,14 @@ const Header: React.FC = () => {
 
   const client = useApolloClient();
 
+  const IS_LOGGED_IN = gql`
+    query unauthAdded {
+      unauthAdded @client
+    }
+  `;
+
+  const {data: {unauthAdded}} = useQuery<any>(IS_LOGGED_IN);
+
   const CURRENT_USER = gql`{
     currentUser {
       id,
@@ -123,18 +132,6 @@ const Header: React.FC = () => {
   `;
 
   const [registered, {loading: registerLoading, data: registerData}] = useMutation(REGISTER_USER);
-
-  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(e.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleOpenDialoge = (e: React.MouseEvent<HTMLButtonElement>)=> {
-    setOpenDialoge(e.currentTarget.name);
-  };
 
   const handleLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setLogin({
@@ -185,6 +182,7 @@ const Header: React.FC = () => {
   }
 
   const logout = () => {
+    setAnchorEl(null)
     localStorage.removeItem('auth_token');
     client.writeQuery({
       query: CURRENT_USER,
@@ -250,27 +248,55 @@ const Header: React.FC = () => {
         setOpenDialoge('login');
       }
     }
-  }, [registerData])
+  }, [registerData]);
+
+  const badgeValue: number = !loadingCurrentUser ? (currentUser && currentUser.currentUser
+    ? Object.values(JSON.parse(currentUser.currentUser.added)).reduce<any>((a: any, b: any) => a + b, 0)
+    : Object.values(unauthAdded).reduce<any>((a: any, b: any) => a + b, 0)
+  ) : 0
 
   const navbarButtonsMobile: JSX.Element = (
     <div className={classes.mobileView}>
-      <IconButton
-        color="inherit"
-        onClick={handleClick}
-      >
-        <MenuOpenRoundedIcon />
-      </IconButton>
+      {loadingCurrentUser
+        ? <CircularProgress color="secondary" />
+        : <IconButton
+          color="inherit"
+          onClick={e => setAnchorEl(e.currentTarget)}
+        >
+          <MenuOpenRoundedIcon />
+        </IconButton>
+      }
       <Menu
         anchorEl={anchorEl}
         open={open}
-        onClose={handleClose}
+        onClose={() => setAnchorEl(null)}
         keepMounted
+        style={{zIndex: 9999}}
       >
         <div>
-          <MenuItem key="login" onClick={handleClose}>Login</MenuItem>
-          <MenuItem key="register" onClick={handleClose}>Register</MenuItem>
-          <MenuItem key="cart" onClick={handleClose}>
-            <Badge badgeContent={4} color="secondary">
+          {!loadingCurrentUser &&
+            (currentUser.currentUser
+              ? <MenuItem onClick={logout}>Logout</MenuItem>
+              : <>
+              <MenuItem onClick={() => {
+                setOpenDialoge('login')
+                setAnchorEl(null)
+              }}>
+                Login
+              </MenuItem>
+              <MenuItem onClick={() => {
+                setOpenDialoge('register')
+                setAnchorEl(null)
+              }}>
+                Register
+              </MenuItem>
+              </>)
+          }
+          <MenuItem key="cart" onClick={() => {
+            setOpenDialoge('cart')
+            setAnchorEl(null)
+          }}>
+            <Badge badgeContent={badgeValue} color="secondary">
               <ShoppingCartIcon />
             </Badge>
           </MenuItem>
@@ -288,14 +314,16 @@ const Header: React.FC = () => {
             <Button color="inherit" name="login" onClick={logout}>Logout</Button>
           </> :
           <>
-            <Button color="inherit" name="login" onClick={handleOpenDialoge}>Login</Button>
-            <Button color="inherit" name="register" onClick={handleOpenDialoge}>Register</Button>
+            <Button color="inherit" onClick={() => setOpenDialoge('login')}>Login</Button>
+            <Button color="inherit" onClick={() => setOpenDialoge('register')}>Register</Button>
           </> :
         <CircularProgress color="secondary" />
       }
 
-      <IconButton color="inherit" name="cart" onClick={handleOpenDialoge}>
-        <Badge badgeContent={currentUser && 4} color="secondary">
+      <IconButton color="inherit" name="cart" onClick={() => setOpenDialoge('cart')}>
+        <Badge
+          badgeContent={badgeValue}
+          color="secondary">
           <ShoppingCartIcon />
         </Badge>
       </IconButton>
@@ -357,13 +385,13 @@ const Header: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button name="register" onClick={handleOpenDialoge} color="primary" disabled={loading}>
+          <Button size="small" onClick={() => setOpenDialoge('register')} color="primary" disabled={loading}>
             Register Now
           </Button>
-          <Button onClick={tryAuth} color="primary" disabled={loading}>
+          <Button size="small" onClick={tryAuth} color="primary" disabled={loading}>
             Log In
           </Button>
-          <Button onClick={() => setOpenDialoge(false)} color="primary" disabled={loading}>
+          <Button size="small" onClick={() => setOpenDialoge(false)} color="primary" disabled={loading}>
             Cancel
           </Button>
         </DialogActions>
@@ -439,13 +467,13 @@ const Header: React.FC = () => {
           )}
         </DialogContent>
         <DialogActions>
-        <Button name="login" onClick={handleOpenDialoge} color="primary" disabled={registerLoading}>
+          <Button size="small" onClick={() => setOpenDialoge('login')} color="primary" disabled={registerLoading}>
             Log In Now
           </Button>
-          <Button onClick={tryAuth} color="primary" disabled={registerLoading}>
+          <Button size="small" onClick={tryAuth} color="primary" disabled={registerLoading}>
             Register
           </Button>
-          <Button onClick={() => setOpenDialoge(false)} color="primary" disabled={registerLoading}>
+          <Button size="small" onClick={() => setOpenDialoge(false)} color="primary" disabled={registerLoading}>
             Cancel
           </Button>
         </DialogActions>
