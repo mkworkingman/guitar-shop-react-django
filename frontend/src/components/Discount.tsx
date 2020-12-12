@@ -32,9 +32,9 @@ const useStyles = makeStyles({
     }
   },
   img: {
-    maxWidth: '200px',
-    height: 'auto',
-    width: '100%',
+    width: 'auto',
+    height: '100%',
+    maxHeight: 200,
     flexShrink: 0
   },
   discount: {
@@ -142,9 +142,8 @@ const Discount: React.FC = () => {
     localStorage.setItem('unauth_added', jwt.sign(unauthAdded, 'myTestKey!noiceone'));
   }, [unauthAdded]);
 
-  // useEffect(() => {
-  //   localStorage.setItem('unauth_added', jwt.sign(addedUnauth, 'myTestKey!noiceone'));
-  // }, [addedUnauth]);
+  if (!loading)
+    console.log(data.disc.slice(0, 4))
 
   return (
     <div>
@@ -159,7 +158,10 @@ const Discount: React.FC = () => {
             <Card className={classes.item} elevation={3} key={item.id}>
               <CardMedia
                 className={classes.img}
-                image={item.image || process.env.PUBLIC_URL + '/img1.jpg'}
+                image={item.image
+                  ? 'http://127.0.0.1:8000/' + item.image
+                  : 'http://127.0.0.1:8000/uploads/no_image/not_found.png'
+                }
                 component='img'
               />
 

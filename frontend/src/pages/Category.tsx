@@ -50,7 +50,7 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 210px))',
-    gridAutoRows: 250,
+    // gridAutoRows: 'auto',
     gridGap: theme.spacing(1.5)
   },
   product: {
@@ -62,9 +62,9 @@ const useStyles = makeStyles({
     alignItems: 'center'
   },
   img: {
-    maxWidth: 200,
-    height: 'auto',
-    width: '100%',
+    width: 'auto',
+    height: '100%',
+    maxHeight: 200,
     flexShrink: 0
   },
   title: {
@@ -456,7 +456,10 @@ const Category: React.FC = () => {
               <Card className={classes.product} elevation={3} key={item.id}>
                 <CardMedia
                   className={classes.img}
-                  image={''}
+                  image={item.image
+                    ? 'http://127.0.0.1:8000/' + item.image
+                    : 'http://127.0.0.1:8000/uploads/no_image/not_found.png'
+                  }
                   component='img'
                 />
 

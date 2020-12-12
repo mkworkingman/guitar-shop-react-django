@@ -86,21 +86,21 @@ class LoginUser(graphene.Mutation):
         if valid:
             user = Siteuser.objects.get(**{login_type: login})
 
-            refresh_token = jwt.encode({
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'exp': int(time.time()) + 31536000
-            }, 'mySuperSecretRefreshKey', algorithm='HS256').decode('utf-8')
+            # refresh_token = jwt.encode({
+            #     'id': user.id,
+            #     'username': user.username,
+            #     'email': user.email,
+            #     'exp': int(time.time()) + 31536000
+            # }, 'mySuperSecretRefreshKey', algorithm='HS256').decode('utf-8')
 
-            print(refresh_token)
+            # print(refresh_token)
 
             auth_token = jwt.encode({
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
                 'added': user.added,
-                'exp': int(time.time()) + 300
+                # 'exp': int(time.time()) + 300
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
         return ValidationErrors(errors)
@@ -229,7 +229,7 @@ class ChangeAdded(graphene.Mutation):
                 'username': user.username,
                 'email': user.email,
                 'added': added_json,
-                'exp': int(time.time()) + 300
+                # 'exp': int(time.time()) + 300
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
 
