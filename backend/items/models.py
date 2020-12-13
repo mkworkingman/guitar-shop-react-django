@@ -6,12 +6,14 @@ ORIENT = (
 )
 
 INSTRUMENT_TYPES = (
+    ('classic', 'Classic'),
     ('acoustic', 'Acoustic'),
     ('electric', 'Electric'),
     ('electroacoustic', 'Electro Acoustic'),
     ('bass', 'Bass'),
     ('acousticbass', 'Acoustic Bass'),
-    ('ukulele', 'Ukulele')
+    ('ukulele', 'Ukulele'),
+    ('balalaika', 'Balalaika')
 )
 
 class Siteuser(models.Model):

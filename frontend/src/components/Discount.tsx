@@ -142,9 +142,6 @@ const Discount: React.FC = () => {
     localStorage.setItem('unauth_added', jwt.sign(unauthAdded, 'myTestKey!noiceone'));
   }, [unauthAdded]);
 
-  if (!loading)
-    console.log(data.disc.slice(0, 4))
-
   return (
     <div>
       <Typography variant="h5">

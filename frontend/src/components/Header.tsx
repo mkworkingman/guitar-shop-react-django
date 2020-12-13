@@ -133,6 +133,16 @@ const Header: React.FC = () => {
 
   const [registered, {loading: registerLoading, data: registerData}] = useMutation(REGISTER_USER);
 
+  const CHECK_ADDED = gql`
+    mutation checkAdded($token: String!){
+      checkAdded(token: $token) {
+        token
+      }
+    }
+  `;
+
+  const [check_added, {loading: checkAddedLoading, data: checkAddedData}] = useMutation(CHECK_ADDED);
+
   const handleLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setLogin({
       ...login,
@@ -312,21 +322,27 @@ const Header: React.FC = () => {
           <>
             <Typography>Hello, {currentUser.currentUser.username}!</Typography>
             <Button color="inherit" name="login" onClick={logout}>Logout</Button>
+            <IconButton color="inherit" name="cart" onClick={() => setOpenDialoge('cart')}>
+              <Badge
+                badgeContent={badgeValue}
+                color="secondary">
+                <ShoppingCartIcon />
+              </Badge>
+            </IconButton>
           </> :
           <>
             <Button color="inherit" onClick={() => setOpenDialoge('login')}>Login</Button>
             <Button color="inherit" onClick={() => setOpenDialoge('register')}>Register</Button>
+            <IconButton color="inherit" name="cart" onClick={() => setOpenDialoge('cart')}>
+              <Badge
+                badgeContent={badgeValue}
+                color="secondary">
+                <ShoppingCartIcon />
+              </Badge>
+            </IconButton>
           </> :
         <CircularProgress color="secondary" />
       }
-
-      <IconButton color="inherit" name="cart" onClick={() => setOpenDialoge('cart')}>
-        <Badge
-          badgeContent={badgeValue}
-          color="secondary">
-          <ShoppingCartIcon />
-        </Badge>
-      </IconButton>
     </div>
   );
 
@@ -482,21 +498,21 @@ const Header: React.FC = () => {
       <Dialog open={openDialoge === 'cart'} onClose={() => setOpenDialoge(false)} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
         <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Email Address"
-            type="email"
-            fullWidth
-          />
+          <Button onClick={() => {
+            check_added({variables: {token: 'testing'}})
+            if (currentUser.currentUser) {
+              console.log(JSON.parse(currentUser.currentUser.added))
+            } else {
+              console.log(unauthAdded)
+            }
+          }}>Test</Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialoge(false)} color="primary">
-            Cancel
+            Order now!
           </Button>
           <Button onClick={() => setOpenDialoge(false)} color="primary">
-            Subscribe
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>

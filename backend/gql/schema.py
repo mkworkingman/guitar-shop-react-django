@@ -233,9 +233,20 @@ class ChangeAdded(graphene.Mutation):
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
 
+class CheckAdded(graphene.Mutation):
+    token = graphene.String()
+
+    class Arguments:
+        token = graphene.String() 
+
+    def mutate(self, info, token):
+        print(token)
+        return AuthToken(token)
+
 class Mutation(graphene.ObjectType):
     login_user = LoginUser.Field()
     create_user = CreateUser.Field()
     change_added = ChangeAdded.Field()
+    check_added = CheckAdded.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
