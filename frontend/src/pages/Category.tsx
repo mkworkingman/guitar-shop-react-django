@@ -5,6 +5,8 @@ import { Paper, Accordion, AccordionSummary, AccordionDetails, Typography, Check
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import theme from '../theme';
 import unauthAddedVar from '../index';
+import Item from '../components/Item';
+import jwt from "jsonwebtoken";
 
 import { useQuery, gql, useMutation } from '@apollo/client';
 
@@ -50,7 +52,7 @@ const useStyles = makeStyles({
     justifyContent: 'center',
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 210px))',
-    // gridAutoRows: 'auto',
+    gridAutoRows: 'min-content',
     gridGap: theme.spacing(1.5)
   },
   product: {
@@ -68,7 +70,8 @@ const useStyles = makeStyles({
     flexShrink: 0
   },
   title: {
-    width: '100%'
+    width: '100%',
+    margin: `${theme.spacing(2)}px 0`
   },
   discount: {
     textDecoration: 'line-through',
@@ -320,6 +323,10 @@ const Category: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    localStorage.setItem('unauth_added', jwt.sign(unauthAdded, 'myTestKey!noiceone'));
+  }, [unauthAdded]);
+
   const properties: JSX.Element = (
     <>
       <Accordion disabled={instruments.length === 0}>
@@ -453,51 +460,15 @@ const Category: React.FC = () => {
         <div className={classes.items}>
           {
             filteredInstruments.map(item =>
-              <Card className={classes.product} elevation={3} key={item.id}>
-                <CardMedia
-                  className={classes.img}
-                  image={item.image
-                    ? 'http://127.0.0.1:8000/' + item.image
-                    : 'http://127.0.0.1:8000/uploads/no_image/not_found.png'
-                  }
-                  component='img'
-                />
-
-                <Box flexGrow='1' display='flex' alignItems='center' width="100%">
-                  <Typography gutterBottom variant="body1" align="center" className={classes.title}>
-                    {item.name}
-                  </Typography>
-                </Box>
-
-                <Box mb={0.75}>
-                  <Typography>
-                    <span className={item.discount && classes.discount}>{item.price}$</span>
-                    {item.discount && <span> {item.discount}$</span>}
-                  </Typography>
-                </Box>
-
-                {currentUser && currentUser.currentUser
-                  ? JSON.parse(currentUser.currentUser.added)[item.id]
-                    ? <ButtonGroup color="primary" variant="contained" size="small">
-                      <Button onClick={() => changeItem(item.id, false)} disabled={loadingChangedAdded}>-</Button>
-                      <Button disabled={loadingChangedAdded}>{JSON.parse(currentUser.currentUser.added)[item.id]}</Button>
-                      <Button onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>+</Button>
-                    </ButtonGroup>
-                    : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
-                      To Card
-                    </Button>
-                  : unauthAdded[item.id]
-                    ? <ButtonGroup color="primary" variant="contained" size="small">
-                      <Button onClick={() => changeItemUnauth(item.id, false)} disabled={loadingChangedAdded}>-</Button>
-                      <Button disabled={loadingChangedAdded}>{unauthAdded[item.id]}</Button>
-                      <Button onClick={() => changeItemUnauth(item.id, true)} disabled={loadingChangedAdded}>+</Button>
-                    </ButtonGroup>
-                    : <Button variant="contained" color="primary" size="small" onClick={() => changeItemUnauth(item.id, true)}>
-                      To Card
-                    </Button>
-                }
-
-              </Card>
+              <Item
+                key={item.id}
+                item={item}
+                currentUser={currentUser && currentUser.currentUser ? currentUser.currentUser : null}
+                loadingChangedAdded={loadingChangedAdded}
+                unauthAdded={unauthAdded}
+                changeItem={changeItem}
+                changeItemUnauth={changeItemUnauth}
+              />
             )
           }
         </div>

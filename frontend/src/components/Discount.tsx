@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Typography,  Box, Card, CardMedia, Button, ButtonGroup, CircularProgress } from '@material-ui/core';
+import { Typography,  Box, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import theme from '../theme';
 import { useQuery, gql, useMutation } from '@apollo/client';
 import jwt from "jsonwebtoken";
 import unauthAddedVar from '../index';
+import Item from '../components/Item';
 
 const useStyles = makeStyles({
   item: {
@@ -151,50 +152,17 @@ const Discount: React.FC = () => {
       <Box display="flex" justifyContent='center' margin={theme.spacing(1.4, 0)}>
 
         { loading ? <CircularProgress /> :
-          data.disc.slice(0, 4).map((item: any) =>
-            <Card className={classes.item} elevation={3} key={item.id}>
-              <CardMedia
-                className={classes.img}
-                image={item.image
-                  ? 'http://127.0.0.1:8000/' + item.image
-                  : 'http://127.0.0.1:8000/uploads/no_image/not_found.png'
-                }
-                component='img'
-              />
-
-              <Box flexGrow='1' display='flex' alignItems='center' width="100%">
-                <Typography gutterBottom variant="body1" align="center" className={classes.title}>
-                  {item.name}
-                </Typography>
-              </Box>
-
-              <Box mb={0.75}>
-                <Typography>
-                  <span className={classes.discount}>${item.price}</span> ${item.discount}
-                </Typography>
-              </Box>
-
-              {currentUser && currentUser.currentUser
-                ? JSON.parse(currentUser.currentUser.added)[item.id]
-                  ? <ButtonGroup color="primary" variant="contained" size="small">
-                    <Button onClick={() => changeItem(item.id, false)} disabled={loadingChangedAdded}>-</Button>
-                    <Button disabled={loadingChangedAdded}>{JSON.parse(currentUser.currentUser.added)[item.id]}</Button>
-                    <Button onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>+</Button>
-                  </ButtonGroup>
-                  : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
-                    To Card
-                  </Button>
-                : unauthAdded[item.id]
-                  ? <ButtonGroup color="primary" variant="contained" size="small">
-                    <Button onClick={() => changeItemUnauth(item.id, false)} disabled={loadingChangedAdded}>-</Button>
-                    <Button disabled={loadingChangedAdded}>{unauthAdded[item.id]}</Button>
-                    <Button onClick={() => changeItemUnauth(item.id, true)} disabled={loadingChangedAdded}>+</Button>
-                  </ButtonGroup>
-                  : <Button variant="contained" color="primary" size="small" onClick={() => changeItemUnauth(item.id, true)}>
-                    To Card
-                  </Button>
-              }
-            </Card>
+          data.disc.slice(0, 3).map((item: any) =>
+            <Item
+              key={item.id}
+              discount={true}
+              item={item}
+              currentUser={currentUser && currentUser.currentUser ? currentUser.currentUser : null}
+              loadingChangedAdded={loadingChangedAdded}
+              unauthAdded={unauthAdded}
+              changeItem={changeItem}
+              changeItemUnauth={changeItemUnauth}
+            />
           )
         }
       </Box>

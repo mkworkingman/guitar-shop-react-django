@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, Box, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress } from '@material-ui/core';
+import { Button, IconButton, Menu, MenuItem, Badge, AppBar, Toolbar, Typography, Dialog, Box, DialogContentText, DialogActions, DialogContent, DialogTitle, TextField, CircularProgress, Card, CardMedia } from '@material-ui/core';
 import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
 import MenuOpenRoundedIcon from '@material-ui/icons/MenuOpenRounded';
 import { makeStyles } from '@material-ui/core/styles';
@@ -7,6 +7,7 @@ import theme from '../theme';
 import { Link } from "react-router-dom";
 import jwt from "jsonwebtoken";
 import { gql, useMutation, useApolloClient, useQuery } from '@apollo/client';
+import ItemAdded from './ItemAdded';
 
 const useStyles = makeStyles({
   mobileView: {
@@ -112,6 +113,25 @@ const Header: React.FC = () => {
     setOpenDialoge(false);
   }, [currentUser])
 
+  const INSTRUMENT_LIST = gql`
+    query {
+      instrumentList {
+        id,
+        name,
+        instType,
+        image,
+        strings,
+        frets,
+        brand,
+        orientation,
+        price,
+        discount
+      }
+    }
+  `;
+
+  const {loading: instrumentListLoading, data: instrumentListData} = useQuery<any>(INSTRUMENT_LIST)
+
   const LOGIN_USER = gql`
     mutation loginUser($login: String!, $password: String!){
       loginUser(login: $login, password: $password){
@@ -132,16 +152,6 @@ const Header: React.FC = () => {
   `;
 
   const [registered, {loading: registerLoading, data: registerData}] = useMutation(REGISTER_USER);
-
-  const CHECK_ADDED = gql`
-    mutation checkAdded($token: String!){
-      checkAdded(token: $token) {
-        token
-      }
-    }
-  `;
-
-  const [check_added, {loading: checkAddedLoading, data: checkAddedData}] = useMutation(CHECK_ADDED);
 
   const handleLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setLogin({
@@ -260,10 +270,28 @@ const Header: React.FC = () => {
     }
   }, [registerData]);
 
-  const badgeValue: number = !loadingCurrentUser ? (currentUser && currentUser.currentUser
-    ? Object.values(JSON.parse(currentUser.currentUser.added)).reduce<any>((a: any, b: any) => a + b, 0)
-    : Object.values(unauthAdded).reduce<any>((a: any, b: any) => a + b, 0)
-  ) : 0
+  const currentAdded: any = currentUser && currentUser.currentUser
+    ? JSON.parse(currentUser.currentUser.added)
+    : unauthAdded;
+
+  const badgeValue: number = !loadingCurrentUser
+    ? Object.values(currentAdded).reduce<any>((a: any, b: any) => a + b, 0)
+    : 0;
+
+  const addedItems = [];
+  let sum = 0;
+  if (instrumentListData) {
+    for (let [key, value] of Object.entries(currentAdded)) {
+      const valueNumber: number = Number(value)
+      const addedItem = instrumentListData.instrumentList.find((item: any) => item.id === key)
+      sum += (addedItem.discount ? addedItem.discount : addedItem.price) * valueNumber
+      addedItems.push(addedItem)
+    }
+  }
+
+  console.log(currentAdded)
+  console.log(addedItems)
+  console.log(sum)
 
   const navbarButtonsMobile: JSX.Element = (
     <div className={classes.mobileView}>
@@ -285,8 +313,11 @@ const Header: React.FC = () => {
       >
         <div>
           {!loadingCurrentUser &&
-            (currentUser.currentUser
-              ? <MenuItem onClick={logout}>Logout</MenuItem>
+            (currentUser && currentUser.currentUser
+              ? <MenuItem onClick={() => {
+                logout()
+                setAnchorEl(null)
+              }}>Logout</MenuItem>
               : <>
               <MenuItem onClick={() => {
                 setOpenDialoge('login')
@@ -495,17 +526,15 @@ const Header: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openDialoge === 'cart'} onClose={() => setOpenDialoge(false)} aria-labelledby="form-dialog-title">
+      <Dialog open={openDialoge === 'cart'} onClose={() => setOpenDialoge(false)}  fullWidth={true} maxWidth="xs" aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
         <DialogContent>
-          <Button onClick={() => {
-            check_added({variables: {token: 'testing'}})
-            if (currentUser.currentUser) {
-              console.log(JSON.parse(currentUser.currentUser.added))
-            } else {
-              console.log(unauthAdded)
-            }
-          }}>Test</Button>
+          {addedItems.map(item => <ItemAdded
+            key={item.id}
+            item={item}
+            amount={currentAdded[item.id]}
+          /> )}
+          <Typography>Sum is: {sum}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialoge(false)} color="primary">

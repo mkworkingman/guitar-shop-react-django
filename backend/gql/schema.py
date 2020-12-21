@@ -30,6 +30,7 @@ class Query(graphene.ObjectType):
     instrument_list = graphene.List(InstrumentType)
     disc = graphene.List(InstrumentType)
     instrument_list_type = graphene.List(InstrumentType, inst=graphene.String())
+    added_items = graphene.List(InstrumentType, ids=graphene.List(graphene.Float))
     current_user = graphene.Field(SiteuserType)
 
     def resolve_instrument_list(self, info):
@@ -42,6 +43,10 @@ class Query(graphene.ObjectType):
     def resolve_instrument_list_type(self, info, inst):
         instrument_queryset = Instrument.objects.filter(inst_type=inst)
         return instrument_queryset
+
+    def resolve_added_items(self, info, ids):
+        print(ids)
+        return Instrument.objects.all()
 
     def resolve_current_user(self, info):
         if info.context.META.get('HTTP_AUTHORIZATION'):
@@ -233,20 +238,9 @@ class ChangeAdded(graphene.Mutation):
             }, 'myTestKey!noiceone', algorithm='HS256').decode('utf-8')
             return AuthToken(auth_token)
 
-class CheckAdded(graphene.Mutation):
-    token = graphene.String()
-
-    class Arguments:
-        token = graphene.String() 
-
-    def mutate(self, info, token):
-        print(token)
-        return AuthToken(token)
-
 class Mutation(graphene.ObjectType):
     login_user = LoginUser.Field()
     create_user = CreateUser.Field()
     change_added = ChangeAdded.Field()
-    check_added = CheckAdded.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
