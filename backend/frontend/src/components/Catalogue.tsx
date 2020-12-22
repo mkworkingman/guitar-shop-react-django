@@ -10,7 +10,7 @@ const useStyles = makeStyles({
   },
   itemTitle: {
     fontWeight: 500,
-    height: '30px',
+    height: 30,
     padding: 0,
     textAlign: 'center',
     fontFamily: theme.typography.fontFamily

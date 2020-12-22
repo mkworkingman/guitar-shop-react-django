@@ -28,7 +28,7 @@ const useStyles = makeStyles({
     zIndex: 20
   },
   toolbar: {
-    maxWidth: '950px',
+    maxWidth: 950,
     margin: '0 auto'
   },
   wide: {
@@ -288,10 +288,6 @@ const Header: React.FC = () => {
       addedItems.push(addedItem)
     }
   }
-
-  console.log(currentAdded)
-  console.log(addedItems)
-  console.log(sum)
 
   const navbarButtonsMobile: JSX.Element = (
     <div className={classes.mobileView}>

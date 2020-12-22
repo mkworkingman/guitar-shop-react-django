@@ -12,7 +12,7 @@ const useStyles = makeStyles({
     flex: '1 1 0px',
     margin: theme.spacing(0, 0.75),
     padding: theme.spacing(1),
-    maxWidth: '240px',
+    maxWidth: 240,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

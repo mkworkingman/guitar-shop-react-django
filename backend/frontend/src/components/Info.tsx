@@ -27,11 +27,11 @@ const useStyles = makeStyles({
     }
   },
   itemImg: {
-    maxWidth: '130px',
-    maxHeight: '130px',
+    maxWidth: 130,
+    maxHeight: 130,
     width: '75%',
-    minHeight: '100px',
-    minWidth: '100px',
+    minHeight: 100,
+    minWidth: 100,
     background: '#8a8a8a',
     borderRadius: '50%',
     display: 'flex',

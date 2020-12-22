@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles({
   newsImage: {
-    backgroundImage: `url(${process.env.PUBLIC_URL + '/img1.jpg'})`,
+    backgroundImage: `url(${process.env.PUBLIC_URL + 'uploads/news/img1.jpg'})`,
     backgroundPositionX: '20%',
     height: '100%'
   }
