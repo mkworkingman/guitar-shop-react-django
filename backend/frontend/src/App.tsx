@@ -11,6 +11,8 @@ import Category from './pages/Category';
 
 import { gql, useQuery } from '@apollo/client';
 
+document.title = 'Music Show Main Page';
+
 const useStyles = makeStyles({
   root: {
     minHeight: '100vh',
