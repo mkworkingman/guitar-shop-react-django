@@ -345,7 +345,7 @@ const Header: React.FC = () => {
   const navbarButtons: JSX.Element = (
     <div className={classes.view}>
       {!loadingCurrentUser ?
-        currentUser.currentUser ?
+        currentUser && currentUser.currentUser ?
           <>
             <Typography>Hello, {currentUser.currentUser.username}!</Typography>
             <Button color="inherit" name="login" onClick={logout}>Logout</Button>

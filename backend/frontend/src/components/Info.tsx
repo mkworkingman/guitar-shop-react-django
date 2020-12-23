@@ -60,7 +60,7 @@ const Info: React.FC = () => {
   return (
     <div>
       <Typography variant="h5">
-        Info
+        Info:
       </Typography>
 
       <Grid container spacing={2}>

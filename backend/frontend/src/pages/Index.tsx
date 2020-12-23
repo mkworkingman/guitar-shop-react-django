@@ -12,7 +12,7 @@ const useStyles = makeStyles({
     padding: theme.spacing(1, 2),
   },
   news: {
-    height: 280,
+    height: 296,
     overflow: 'auto'
   },
   item: {
@@ -50,7 +50,7 @@ const Index: React.FC = () => {
       </Grid>
 
       <Grid item className={classes.item} xs={12} sm={8}>
-        <Paper className={`${classes.news} ${classes.paper}`} elevation={3}>
+        <Paper className={`${classes.news}`} elevation={3}>
           <News />
         </Paper>
       </Grid>
