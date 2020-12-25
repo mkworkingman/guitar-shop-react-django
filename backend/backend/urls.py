@@ -14,7 +14,7 @@ def index(request):
 
 urlpatterns = [
     path('admin', admin.site.urls),
-    path("graphql", csrf_exempt(GraphQLView.as_view(graphiql=False))),
+    path('graphql', csrf_exempt(GraphQLView.as_view(graphiql=False))),
     re_path(r'^(?!uploads/){1}.*$', index),
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
