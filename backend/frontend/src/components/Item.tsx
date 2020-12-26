@@ -77,7 +77,7 @@ const Item: React.FC<any> = ({item, currentUser, loadingChangedAdded, unauthAdde
             <Button onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>+</Button>
           </ButtonGroup>
           : <Button variant="contained" color="primary" size="small" onClick={() => changeItem(item.id, true)} disabled={loadingChangedAdded}>
-            To Card
+            Add To Card
           </Button>
         : unauthAdded[item.id]
           ? <ButtonGroup color="primary" variant="contained" size="small">
@@ -86,7 +86,7 @@ const Item: React.FC<any> = ({item, currentUser, loadingChangedAdded, unauthAdde
             <Button onClick={() => changeItemUnauth(item.id, true)} disabled={loadingChangedAdded}>+</Button>
           </ButtonGroup>
           : <Button variant="contained" color="primary" size="small" onClick={() => changeItemUnauth(item.id, true)}>
-            To Card
+            Add To Card
           </Button>
       }
 
